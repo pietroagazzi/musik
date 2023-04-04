@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use App\Repository\UserRepository;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
@@ -35,6 +36,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column(type: 'boolean')]
     private $isVerified = false;
+
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $lastVerificationSentAt = null;
 
     /**
      * @return int|null
@@ -151,6 +155,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setIsVerified(bool $isVerified): self
     {
         $this->isVerified = $isVerified;
+
+        return $this;
+    }
+
+    public function getLastVerificationSentAt(): ?\DateTimeInterface
+    {
+        return $this->lastVerificationSentAt;
+    }
+
+    public function setLastVerificationSentAt(\DateTimeInterface $lastVerificationSentAt): self
+    {
+        $this->lastVerificationSentAt = $lastVerificationSentAt;
 
         return $this;
     }

@@ -3,23 +3,39 @@
 {% block title %}Hello MusikController!{% endblock %}
 
 {% block body %}
-<style>
-    .example-wrapper { margin: 1em auto; max-width: 800px; width: 95%; font: 18px/1.5 sans-serif; }
-    .example-wrapper code { background: #F5F5F5; padding: 2px 6px; }
-</style>
+    <style>
+        .example-wrapper {
+            margin: 1em auto;
+            max-width: 800px;
+            width: 95%;
+            font: 18px/1.5 sans-serif;
+        }
 
-<div class="example-wrapper">
-    <!-- if user is logged in, show the following -->
-    {% if is_granted('IS_AUTHENTICATED_FULLY') %}
-        <h1>Hi {{ app.user.username }}!</h1>
-        <p>
-            You are logged in! See <a href="{{ path('app_logout') }}">logout</a> link.
-        </p>
-    {% else %}
-        <h1>Welcome!</h1>
-        <p>
-            You are not logged in! See <a href="{{ path('app_login') }}">login</a> link.
-        </p>
-    {% endif %}
-</div>
+        .example-wrapper code {
+            background: #F5F5F5;
+            padding: 2px 6px;
+        }
+    </style>
+
+    <div class="example-wrapper">
+        <!-- if user is logged in, show the following -->
+        {% if is_granted('IS_AUTHENTICATED_FULLY') %}
+            <h1>Hi {{ app.user.username }}!</h1>
+            <p>
+                You are logged in! See <a href="{{ path('app_logout') }}">logout</a> link.
+            </p>
+        {% else %}
+            <h1>Welcome!</h1>
+            <p>
+                You are not logged in! See <a href="{{ path('app_login') }}">login</a> link.
+            </p>
+        {% endif %}
+
+        {% if app.user and not app.user.isVerified %}
+            <p>
+                Your account is not verified. <a href="{{ path('app_verify_email_resend') }}">Request a new verification
+                    email</a>.
+            </p>
+        {% endif %}
+    </div>
 {% endblock %}

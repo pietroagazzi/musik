@@ -17,11 +17,18 @@
 <body>
 {% block body %}{% endblock %}
 
+{# Verification #}
+{% if app.user and app.user.isVerified %}
+    <p>Utente verificato</p>
+{% elseif app.user and not app.user.isVerified %}
+    <p>Utente non verificato</p>
+{% endif %}
+
 {# Show flashes #}
 {% for label, messages in app.flashes %}
     <div class="alert alert-{{ label }}">
         {% for message in messages %}
-            {{ message }}
+            {{ label }}: {{ message }}
         {% endfor %}
     </div>
 {% endfor %}
