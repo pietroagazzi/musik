@@ -25,6 +25,12 @@ class RegistrationController extends AbstractController
     private EmailVerifier $emailVerifier;
 
     /**
+     * time to wait before you can request another verification link
+     * @var int
+     */
+    private const VERIFICATION_EMAIL_WAIT_TIME = 60;
+
+    /**
      * @param EmailVerifier $emailVerifier
      */
     public function __construct(EmailVerifier $emailVerifier)
@@ -33,6 +39,7 @@ class RegistrationController extends AbstractController
     }
 
     /**
+     * Create a new user account and send a verification email.
      * @param Request $request
      * @param UserPasswordHasherInterface $userPasswordHasher
      * @param UserAuthenticatorInterface $userAuthenticator
@@ -68,7 +75,7 @@ class RegistrationController extends AbstractController
                     ->from(new Address('noreply@musik.com', 'Musik App'))
                     ->to($user->getEmail())
                     ->subject('Please Confirm your Email')
-                    ->htmlTemplate('registration/confirmation_email.html.twig')
+                    ->htmlTemplate('security/registration/confirmation_email.html.twig')
             );
 
             $this->addFlash('success', 'Your account has been created. Please check your email to verify your account.');
@@ -80,12 +87,13 @@ class RegistrationController extends AbstractController
             );
         }
 
-        return $this->render('registration/register.html.twig', [
+        return $this->render('security/registration/register.html.twig', [
             'registrationForm' => $form->createView(),
         ]);
     }
 
     /**
+     * Confirm the user's email address.
      * @param Request $request
      * @param TranslatorInterface $translator
      * @return Response
@@ -110,6 +118,7 @@ class RegistrationController extends AbstractController
     }
 
     /**
+     * Resend verification email.
      * @param EntityManagerInterface $entityManager
      * @return Response
      * @throws TransportExceptionInterface
@@ -119,17 +128,30 @@ class RegistrationController extends AbstractController
     {
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
 
+        // get current user
         if (!$user = $this->getUser()) {
             return $this->redirectToRoute('app_register');
         }
 
+        // check if user has already verified their email
         if ($user->isVerified()) {
             $this->addFlash('warning', 'Your email address has already been verified.');
             return $this->redirectToRoute('app_home');
         }
 
-        if ($user->getLastVerificationSentAt() > new DateTime('-30 seconds')) {
-            $this->addFlash('warning', 'Wait 30 seconds before resend verification email.');
+        $lastVerificationSentAt = $user->getLastVerificationSentAt()->getTimestamp();
+        // calculate time elapsed since last verification email sent
+        $secondsSinceLastVerification = (new DateTime('now'))->getTimestamp() - $lastVerificationSentAt;
+
+        // check if user has to wait before requesting another verification email
+        if ($secondsSinceLastVerification < self::VERIFICATION_EMAIL_WAIT_TIME) {
+            $timeLeft = self::VERIFICATION_EMAIL_WAIT_TIME - $secondsSinceLastVerification;
+
+            $this->addFlash(
+                'warning',
+                "Wait $timeLeft seconds before resend verification email."
+            );
+
             return $this->redirectToRoute('app_home');
         }
 
@@ -144,7 +166,7 @@ class RegistrationController extends AbstractController
                 ->from(new Address('noreply@musik.com', 'Musik App'))
                 ->to($user->getEmail())
                 ->subject('Please Confirm your Email')
-                ->htmlTemplate('registration/confirmation_email.html.twig')
+                ->htmlTemplate('security/registration/confirmation_email.html.twig')
         );
 
         $this->addFlash('success', 'Verification email has been sent.');

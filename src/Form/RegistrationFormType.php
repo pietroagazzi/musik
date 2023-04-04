@@ -29,11 +29,33 @@ class RegistrationFormType extends AbstractType
                 'attr' => [
                     'placeholder' => 'Email',
                 ],
+                'constraints' => [
+                    new NotBlank([
+                        'message' => 'Please enter an email',
+                    ]),
+                    new Length([
+                        'min' => 6,
+                        'minMessage' => 'Your email should be at least {{ limit }} characters',
+                        'max' => 180,
+                        'maxMessage' => 'Your email should be at most {{ limit }} characters',
+                    ]),
+                ],
             ])
             ->add('username', TextType::class, [
                 'label' => 'Username',
                 'attr' => [
                     'placeholder' => 'Username',
+                ],
+                'constraints' => [
+                    new NotBlank([
+                        'message' => 'Please enter a username',
+                    ]),
+                    new Length([
+                        'min' => 3,
+                        'minMessage' => 'Your username should be at least {{ limit }} characters',
+                        'max' => 18,
+                        'maxMessage' => 'Your username should be at most {{ limit }} characters',
+                    ]),
                 ],
             ])
             ->add('agreeTerms', CheckboxType::class, [
@@ -60,8 +82,8 @@ class RegistrationFormType extends AbstractType
                     new Length([
                         'min' => 6,
                         'minMessage' => 'Your password should be at least {{ limit }} characters',
-                        // max length allowed by Symfony for security reasons
-                        'max' => 4096,
+                        'max' => 50,
+                        'maxMessage' => 'Your password should be at most {{ limit }} characters',
                     ]),
                 ],
             ]);
