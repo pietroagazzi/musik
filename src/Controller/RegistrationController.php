@@ -27,6 +27,7 @@ class RegistrationController extends AbstractController
      * @var int
      */
     private const VERIFICATION_EMAIL_WAIT_TIME = 60;
+
     private EmailVerifier $emailVerifier;
 
     /**
@@ -77,7 +78,7 @@ class RegistrationController extends AbstractController
                     ->htmlTemplate('security/registration/confirmation_email.html.twig')
             );
 
-            $this->addFlash('success', 'Your account has been created. Please check your email to verify your account.');
+            $this->addFlash('success', 'Your account has been created.');
 
             return $userAuthenticator->authenticateUser(
                 $user,
