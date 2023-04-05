@@ -22,13 +22,12 @@ use SymfonyCasts\Bundle\VerifyEmail\Exception\VerifyEmailExceptionInterface;
 
 class RegistrationController extends AbstractController
 {
-    private EmailVerifier $emailVerifier;
-
     /**
      * time to wait before you can request another verification link
      * @var int
      */
     private const VERIFICATION_EMAIL_WAIT_TIME = 60;
+    private EmailVerifier $emailVerifier;
 
     /**
      * @param EmailVerifier $emailVerifier

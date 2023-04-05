@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use App\Repository\UserRepository;
+use DateTimeInterface;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
@@ -38,7 +39,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private $isVerified = false;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
-    private ?\DateTimeInterface $lastVerificationSentAt = null;
+    private ?DateTimeInterface $lastVerificationSentAt = null;
 
     /**
      * @return int|null
@@ -74,7 +75,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      */
     public function getUserIdentifier(): string
     {
-        return (string) $this->email;
+        return (string)$this->email;
     }
 
     /**
@@ -147,11 +148,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    /**
+     * @return bool
+     */
     public function isVerified(): bool
     {
         return $this->isVerified;
     }
 
+    /**
+     * @param bool $isVerified
+     * @return $this
+     */
     public function setIsVerified(bool $isVerified): self
     {
         $this->isVerified = $isVerified;
@@ -159,12 +167,19 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function getLastVerificationSentAt(): ?\DateTimeInterface
+    /**
+     * @return DateTimeInterface|null
+     */
+    public function getLastVerificationSentAt(): ?DateTimeInterface
     {
         return $this->lastVerificationSentAt;
     }
 
-    public function setLastVerificationSentAt(\DateTimeInterface $lastVerificationSentAt): self
+    /**
+     * @param DateTimeInterface $lastVerificationSentAt
+     * @return $this
+     */
+    public function setLastVerificationSentAt(DateTimeInterface $lastVerificationSentAt): self
     {
         $this->lastVerificationSentAt = $lastVerificationSentAt;
 
