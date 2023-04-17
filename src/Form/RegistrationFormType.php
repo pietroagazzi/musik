@@ -13,6 +13,7 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\IsTrue;
 use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
+use Symfony\Component\Validator\Constraints\Regex;
 
 class RegistrationFormType extends AbstractType
 {
@@ -55,6 +56,10 @@ class RegistrationFormType extends AbstractType
                         'minMessage' => 'Your username should be at least {{ limit }} characters',
                         'max' => 18,
                         'maxMessage' => 'Your username should be at most {{ limit }} characters',
+                    ]),
+                    new Regex([
+                        'pattern' => '/^[a-zA-Z0-9_]+$/',
+                        'message' => 'Your username should only contain letters, numbers and underscores',
                     ]),
                 ],
             ])
