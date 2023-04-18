@@ -8,6 +8,7 @@ use App\Security\EmailVerifier;
 use App\Security\UserAuthenticator;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -16,6 +17,9 @@ use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Symfony\Component\Mime\Address;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Security\Http\Attribute\CurrentUser;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Security\Http\Authentication\UserAuthenticatorInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use SymfonyCasts\Bundle\VerifyEmail\Exception\VerifyEmailExceptionInterface;
@@ -28,14 +32,13 @@ class RegistrationController extends AbstractController
      */
     private const VERIFICATION_EMAIL_WAIT_TIME = 60;
 
-    private EmailVerifier $emailVerifier;
-
     /**
      * @param EmailVerifier $emailVerifier
      */
-    public function __construct(EmailVerifier $emailVerifier)
+    public function __construct(
+        private readonly EmailVerifier $emailVerifier
+    )
     {
-        $this->emailVerifier = $emailVerifier;
     }
 
     /**
@@ -48,9 +51,20 @@ class RegistrationController extends AbstractController
      * @return Response
      * @throws TransportExceptionInterface
      */
-    #[Route('/register', name: 'app_register')]
-    public function register(Request $request, UserPasswordHasherInterface $userPasswordHasher, UserAuthenticatorInterface $userAuthenticator, UserAuthenticator $authenticator, EntityManagerInterface $entityManager): Response
+    #[Route('/register', name: 'app_register', methods: ['GET', 'POST'])]
+    public function register(
+        Request                     $request,
+        UserPasswordHasherInterface $userPasswordHasher,
+        UserAuthenticatorInterface  $userAuthenticator,
+        UserAuthenticator           $authenticator,
+        EntityManagerInterface      $entityManager
+    ): Response
     {
+        // if user is already logged in, redirect to home page
+        if ($this->getUser()) {
+            return $this->redirectToRoute('app_home');
+        }
+
         $user = new User();
         $form = $this->createForm(RegistrationFormType::class, $user);
         $form->handleRequest($request);
@@ -80,6 +94,7 @@ class RegistrationController extends AbstractController
 
             $this->addFlash('success', 'Your account has been created.');
 
+            // authenticate the user after registration
             return $userAuthenticator->authenticateUser(
                 $user,
                 $authenticator,
@@ -98,11 +113,10 @@ class RegistrationController extends AbstractController
      * @param TranslatorInterface $translator
      * @return Response
      */
-    #[Route('/verify/email', name: 'app_verify_email')]
+    #[Route('/verify/email', name: 'app_verify_email', methods: ['GET'])]
+    #[IsGranted('ROLE_USER')]
     public function verifyUserEmail(Request $request, TranslatorInterface $translator): Response
     {
-        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
-
         // validate email confirmation link, sets User::isVerified=true and persists
         try {
             $this->emailVerifier->handleEmailConfirmation($request, $this->getUser());
@@ -120,19 +134,16 @@ class RegistrationController extends AbstractController
     /**
      * Resend verification email.
      * @param EntityManagerInterface $entityManager
+     * @param User $user
      * @return Response
      * @throws TransportExceptionInterface
      */
-    #[Route('/verify/email/resend', name: 'app_verify_email_resend')]
-    public function resendVerificationEmail(EntityManagerInterface $entityManager): Response
+    #[Route('/verify/email/resend', name: 'app_verify_email_resend', methods: ['GET'])]
+    public function resendVerificationEmail(
+        EntityManagerInterface       $entityManager,
+        #[CurrentUser] UserInterface $user
+    ): Response
     {
-        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
-
-        // get current user
-        if (!$user = $this->getUser()) {
-            return $this->redirectToRoute('app_register');
-        }
-
         // check if user has already verified their email
         if ($user->isVerified()) {
             $this->addFlash('warning', 'Your email address has already been verified.');
@@ -172,5 +183,4 @@ class RegistrationController extends AbstractController
         $this->addFlash('success', 'Verification email has been sent.');
         return $this->redirectToRoute('app_home');
     }
-
 }
