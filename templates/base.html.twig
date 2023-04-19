@@ -24,13 +24,9 @@
     <p>Utente non verificato</p>
 {% endif %}
 
-{# Show flashes #}
-{% for label, messages in app.flashes %}
-    <div class="alert alert-{{ label }}">
-        {% for message in messages %}
-            {{ label }}: {{ message }}
-        {% endfor %}
-    </div>
-{% endfor %}
+<script>
+    const alerts = {{ app.flashes|json_encode|raw }};
+</script>
+
 </body>
 </html>

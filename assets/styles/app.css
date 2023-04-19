@@ -1,0 +1,11 @@
+@import "components/alerts.css";
+
+body {
+    background-color: lightgray;
+
+    font-family: "JetBrains Mono", monospace;
+    font-size: 1.2rem;
+
+    color: #333;
+}
+
