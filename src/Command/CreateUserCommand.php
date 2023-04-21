@@ -61,6 +61,8 @@ class CreateUserCommand extends Command
         $username = $io->ask("What is the username of the user?", $randomUsername, function ($username) use ($user) {
             $user->setUsername($username);
             $this->validateUser($user, 'username');
+
+            return $username;
         });
 
         $io->ask('What is the email of the user?', "$username@example.com", function ($email) use ($user) {
