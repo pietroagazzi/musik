@@ -2,11 +2,13 @@
 
 namespace App\Controller\Security;
 
+use App\Entity\EmailVerificationRequest;
 use App\Entity\User;
 use App\Form\RegistrationFormType;
 use App\Security\EmailVerifier;
 use App\Security\UserAuthenticator;
 use DateTime;
+use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -76,10 +78,13 @@ class RegistrationController extends AbstractController
                         $user,
                         $form->get('plainPassword')->getData()
                     )
-                )
-                ->setLastVerificationSentAt(new DateTime('now'));
+                );
+
+            $emailConfirmationRequired = new EmailVerificationRequest();
+            $emailConfirmationRequired->setUser($user);
 
             $entityManager->persist($user);
+            $entityManager->persist($emailConfirmationRequired);
             $entityManager->flush();
 
             // generate a signed url and email it to the user
@@ -149,25 +154,38 @@ class RegistrationController extends AbstractController
             return $this->redirectToRoute('app_home');
         }
 
-        $lastVerificationSentAt = $user->getLastVerificationSentAt()->getTimestamp();
-        // calculate time elapsed since last verification email sent
-        $secondsSinceLastVerification = (new DateTime('now'))->getTimestamp() - $lastVerificationSentAt;
+        // get last verification request
+        // if user has never requested a verification email, $lastVerificationRequest will be false
+        $lastVerificationRequest = $user->getEmailVerificationRequests()->last();
 
-        // check if user has to wait before requesting another verification email
-        if ($secondsSinceLastVerification < self::VERIFICATION_EMAIL_WAIT_TIME) {
-            $timeLeft = self::VERIFICATION_EMAIL_WAIT_TIME - $secondsSinceLastVerification;
+        // if user has already requested a verification email
+        if ($lastVerificationRequest) {
+            $lastVerificationSentAt = $lastVerificationRequest->getRequestedAt()->getTimestamp();
 
-            $this->addFlash(
-                'warning',
-                "Wait $timeLeft seconds before resend verification email."
-            );
+            // calculate time elapsed since last verification email sent
+            $secondsSinceLastVerification = (new DateTime('now'))->getTimestamp() - $lastVerificationSentAt;
 
-            return $this->redirectToRoute('app_home');
+            // check if user has to wait before requesting another verification email
+            if ($secondsSinceLastVerification < self::VERIFICATION_EMAIL_WAIT_TIME) {
+                $timeLeft = self::VERIFICATION_EMAIL_WAIT_TIME - $secondsSinceLastVerification;
+
+                $this->addFlash(
+                    'warning',
+                    "Wait $timeLeft seconds before resend verification email."
+                );
+
+                return $this->redirectToRoute('app_home');
+            }
+        } else {
+            // if user has never requested a verification email
+            $lastVerificationRequest = new EmailVerificationRequest();
+            $lastVerificationRequest->setUser($user);
         }
 
         // update last verification sent at
-        $user->setLastVerificationSentAt(new DateTime('now'));
-        $entityManager->persist($user);
+        $lastVerificationRequest->setRequestedAt(new DateTimeImmutable('now'));
+
+        $entityManager->persist($lastVerificationRequest);
         $entityManager->flush();
 
         // generate a signed url and email it to the user

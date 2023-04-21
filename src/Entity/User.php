@@ -4,6 +4,8 @@ namespace App\Entity;
 
 use App\Repository\UserRepository;
 use DateTimeInterface;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
@@ -33,8 +35,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     /**
      * @var string|null The hashed password
      */
-    #[ORM\Column]
-    #[Assert\NotBlank(message: 'Password cannot be blank.')]
+    #[ORM\Column(nullable: false)]
     private ?string $password = null;
 
     #[ORM\Column(length: 30, unique: true)]
@@ -46,8 +47,13 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: 'boolean')]
     private bool $isVerified = false;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
-    private ?DateTimeInterface $lastVerificationSentAt = null;
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: EmailVerificationRequest::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
+    private Collection $emailVerificationRequests;
+
+    public function __construct()
+    {
+        $this->emailVerificationRequests = new ArrayCollection();
+    }
 
     /**
      * @return int|null
@@ -179,20 +185,31 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     }
 
     /**
-     * @return DateTimeInterface|null
+     * @return Collection<int, EmailVerificationRequest>
      */
-    public function getLastVerificationSentAt(): ?DateTimeInterface
+    public function getEmailVerificationRequests(): Collection
     {
-        return $this->lastVerificationSentAt;
+        return $this->emailVerificationRequests;
     }
 
-    /**
-     * @param DateTimeInterface $lastVerificationSentAt
-     * @return $this
-     */
-    public function setLastVerificationSentAt(DateTimeInterface $lastVerificationSentAt): self
+    public function addEmailVerificationRequest(EmailVerificationRequest $emailVerificationRequest): self
     {
-        $this->lastVerificationSentAt = $lastVerificationSentAt;
+        if (!$this->emailVerificationRequests->contains($emailVerificationRequest)) {
+            $this->emailVerificationRequests->add($emailVerificationRequest);
+            $emailVerificationRequest->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeEmailVerificationRequest(EmailVerificationRequest $emailVerificationRequest): self
+    {
+        if ($this->emailVerificationRequests->removeElement($emailVerificationRequest)) {
+            // set the owning side to null (unless already changed)
+            if ($emailVerificationRequest->getUser() === $this) {
+                $emailVerificationRequest->setUser(null);
+            }
+        }
 
         return $this;
     }

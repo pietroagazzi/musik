@@ -9,30 +9,9 @@
 
     {{ form_start(form, {'attr': {'class': 'form login'}}) }}
     <h1>Register</h1>
-    <div class="form__field">
-        <div class="login-error">
-            {{ form_errors(form.email) }}
-        </div>
-        {# {{ form_label(form.email) }} #}
-        {{ form_widget(form.email) }}
-        {{ form_help(form.email) }}
-    </div>
-    <div class="login-row">
-        <div class="login-error">
-            {{ form_errors(form.username) }}
-        </div>
-        {# {{ form_label(form.username) }} #}
-        {{ form_widget(form.username) }}
-        {{ form_help(form.username) }}
-    </div>
-    <div class="login-row">
-        <div class="login-error">
-            {{ form_errors(form.plainPassword) }}
-        </div>
-        {# {{ form_label(form.email) }} #}
-        {{ form_widget(form.plainPassword) }}
-        {{ form_help(form.plainPassword) }}
-    </div>
+    {{ form_row(form.username) }}
+    {{ form_row(form.email) }}
+    {{ form_row(form.plainPassword) }}
     {{ form_row(form.agreeTerms) }}
 
     <button type="submit" class="btn">Register</button>
