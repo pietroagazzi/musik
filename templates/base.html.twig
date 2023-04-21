@@ -2,9 +2,9 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>{% block title %}Welcome!{% endblock %}</title>
+    <title>{% block title %}Musik{% endblock %}</title>
     <link rel="icon"
-          href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text></svg>">
+          href="{{ asset('build/images/icon.svg') }}">
     {% block stylesheets %}
         {{ encore_entry_link_tags('app') }}
     {% endblock %}
@@ -14,15 +14,39 @@
     {% endblock %}
 </head>
 <body>
+<header class="header responsive-wrapper">
+    <div class="header-left">
+        <a href="#" class="header-logo">
+            Musik
+        </a>
+    </div>
+    <div class="header-middle">
+        <a href="#" class="header-link">Home</a>
+        <span>/</span>
+        <a href="#" class="header-link">Discover</a>
+    </div>
+    <div class="header-right">
+        {# if user is logged #}
+        {% if app.user %}
+            <div class="user-menu">
+                <div class="user-menu-image">
+                    <img src="https://assets.codepen.io/285131/author-3.png" alt="{{ app.user.username }}"/>
+                </div>
+            </div>
+            <!-- <button class="header-menu-button">Menu</button> -->
+        {% else %}
+            <nav class="header-nav">
+                <a href="{{ path('app_login') }}" class="header-link">Login</a>
+                <a href="{{ path('app_register') }}" class="header-link header-link--button">Register</a>
+            </nav>
+            <!-- <button class="header-menu-button">Menu</button> -->
+        {% endif %}
+    </div>
+
+</header>
 {% block body %}{% endblock %}
 
-{# Verification #}
-{% if app.user and app.user.isVerified %}
-    <p>Utente verificato</p>
-{% elseif app.user and not app.user.isVerified %}
-    <p>Utente non verificato</p>
-{% endif %}
-
+{# show flashes #}
 <script>
     const alerts = {{ app.flashes|json_encode|raw }};
 </script>

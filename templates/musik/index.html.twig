@@ -1,27 +1,17 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Hello MusikController!{% endblock %}
+{% block title %}Musik{% endblock %}
 
 {% block body %}
-    <div>
-        <!-- if user is logged in, show the following -->
-        {% if is_granted('IS_AUTHENTICATED_FULLY') %}
-            <h1>Hi {{ app.user.username }}!</h1>
-            <p>
-                You are logged in! See <a href="{{ path('app_logout') }}">logout</a> link.
-            </p>
-        {% else %}
-            <h1>Welcome!</h1>
-            <p>
-                You are not logged in! See <a href="{{ path('app_login') }}">login</a> link.
-            </p>
-        {% endif %}
-
-        {% if app.user and not app.user.isVerified %}
-            <p>
-                Your account is not verified. <a href="{{ path('app_verify_email_resend') }}">Request a new verification
-                    email</a>.
-            </p>
-        {% endif %}
-    </div>
+    <main class="responsive-wrapper">
+        <div class="page-title">
+            <h1>Latest Updates</h1>
+        </div>
+        <div class="magazine-layout">
+            <div class="magazine-column">
+                <article class="article">
+                </article>
+            </div>
+        </div>
+    </main>
 {% endblock %}
