@@ -8,6 +8,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use SensitiveParameter;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -50,9 +51,13 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: EmailVerificationRequest::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $emailVerificationRequests;
 
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: Connection::class)]
+    private Collection $connections;
+
     public function __construct()
     {
         $this->emailVerificationRequests = new ArrayCollection();
+        $this->connections = new ArrayCollection();
     }
 
     /**
@@ -130,7 +135,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      * @param string $password
      * @return $this
      */
-    public function setPassword(string $password): self
+    public function setPassword(#[SensitiveParameter] string $password): self
     {
         $this->password = $password;
 
@@ -192,6 +197,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->emailVerificationRequests;
     }
 
+    /**
+     * @param EmailVerificationRequest $emailVerificationRequest
+     * @return $this
+     */
     public function addEmailVerificationRequest(EmailVerificationRequest $emailVerificationRequest): self
     {
         if (!$this->emailVerificationRequests->contains($emailVerificationRequest)) {
@@ -202,6 +211,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    /**
+     * @param EmailVerificationRequest $emailVerificationRequest
+     * @return $this
+     */
     public function removeEmailVerificationRequest(EmailVerificationRequest $emailVerificationRequest): self
     {
         if ($this->emailVerificationRequests->removeElement($emailVerificationRequest)) {
@@ -212,5 +225,13 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         }
 
         return $this;
+    }
+
+    /**
+     * @return Collection<int, Connection>
+     */
+    public function getConnections(): Collection
+    {
+        return $this->connections;
     }
 }
