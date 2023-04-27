@@ -234,4 +234,33 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         return $this->connections;
     }
+
+    public function addConnection(Connection $connection): self
+    {
+        if (!$this->connections->contains($connection)) {
+            $this->connections->add($connection);
+            $connection->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeConnection(Connection $connection): self
+    {
+        if ($this->connections->removeElement($connection)) {
+            // set the owning side to null (unless already changed)
+            if ($connection->getUser() === $this) {
+                $connection->setUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function hasServiceConnection(string $serviceName): bool
+    {
+        return $this->connections->exists(
+            fn(int $key, Connection $connection) => $connection->getService() === $serviceName
+        );
+    }
 }

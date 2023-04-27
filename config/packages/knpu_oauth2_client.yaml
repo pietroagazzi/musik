@@ -1,0 +1,8 @@
+knpu_oauth2_client:
+    clients:
+        spotify_main:
+            type: spotify
+            client_id: '%env(SPOTIFY_CLIENT_ID)%'
+            client_secret: '%env(SPOTIFY_CLIENT_SECRET)%'
+            redirect_route: connect_spotify_check
+            redirect_params: { }

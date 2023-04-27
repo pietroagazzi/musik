@@ -24,11 +24,6 @@ class AppFixtures extends Fixture
             $manager->persist($this->createUser($username));
         }
 
-        // generate services using service provider
-        foreach ($this->serviceProvider() as $data) {
-            $manager->persist($this->createService($data));
-        }
-
         $manager->flush();
     }
 
@@ -54,33 +49,5 @@ class AppFixtures extends Fixture
             ->setPassword($this->passwordHasher->hashPassword($user, $username));
 
         return $user;
-    }
-
-    /**
-     * @return Generator
-     */
-    public function serviceProvider(): Generator
-    {
-        yield [
-            'name' => 'spotify',
-            'url' => 'https://spotify.com',
-            'icon_url' => 'https://developer.spotify.com/images/guidelines/design/icon2@2x.png'
-        ];
-        yield [
-            'name' => 'apple music',
-            'url' => 'https://music.apple.com',
-            'icon_url' => 'https://developer.apple.com/design/human-interface-guidelines/macos/images/app-icon-realistic-materials_2x.png'
-        ];
-    }
-
-    public function createService(array $data): Service
-    {
-        $service = new Service();
-        $service
-            ->setName($data['name'])
-            ->setUrl($data['url'])
-            ->setIconUrl($data['icon_url']);
-
-        return $service;
     }
 }
