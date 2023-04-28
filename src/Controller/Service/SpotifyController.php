@@ -32,6 +32,12 @@ class SpotifyController extends AbstractController
             ->getClient('spotify_main')
             ->redirect([
                 'user-read-email',
+                'user-read-private',
+                'playlist-read-private',
+                'playlist-read-collaborative',
+                'playlist-modify-private',
+                'playlist-modify-public',
+                'user-top-read'
             ]);
     }
 
@@ -50,13 +56,14 @@ class SpotifyController extends AbstractController
             return $this->redirectToRoute('app_home');
         }
 
-
+        // Get the oauth client
         $client = $this->clientRegistry->getClient('spotify_main');
 
         try {
             /** @var Spotify $provider */
             $provider = $client->getOAuth2Provider();
 
+            // Get the access token
             $accessToken = $provider->getAccessToken('authorization_code', [
                 'code' => $request->query->get('code'),
             ]);
@@ -66,6 +73,7 @@ class SpotifyController extends AbstractController
             return $this->redirectToRoute('app_home');
         }
 
+        // Create the connection
         $connection = new Connection();
         $connection
             ->setService('spotify')

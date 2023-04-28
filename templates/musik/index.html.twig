@@ -11,16 +11,11 @@
         <!-- oauth buttons -->
         <div>
             <!-- spotify -->
-            <a href="{{ path('connect_spotify_start') }}">
-                Connect with Spotify
-            </a>
-        </div>
-
-        <div class="magazine-layout">
-            <div class="magazine-column">
-                <article class="article">
-                </article>
-            </div>
+            {% if app.user and not app.user.hasServiceConnection('spotify') %}
+                <a href="{{ path('connect_spotify_start') }}">
+                    Connect with Spotify
+                </a>
+            {% endif %}
         </div>
     </main>
 {% endblock %}

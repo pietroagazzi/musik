@@ -11,6 +11,7 @@
 		"doctrine/doctrine-bundle": "^2.9",
 		"doctrine/doctrine-migrations-bundle": "^3.2",
 		"doctrine/orm": "^2.14",
+		"jwilsson/spotify-web-api-php": "^5.6",
 		"kerox/oauth2-spotify": "^2.0",
 		"knpuniversity/oauth2-client-bundle": "^2.14",
 		"phpdocumentor/reflection-docblock": "^5.3",
