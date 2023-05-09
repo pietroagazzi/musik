@@ -20,5 +20,11 @@ services:
             - '../src/Entity/'
             - '../src/Kernel.php'
 
+    # spotify session
+    SpotifyWebAPI\Session:
+        arguments:
+            - '%env(SPOTIFY_CLIENT_ID)%'
+            - '%env(SPOTIFY_CLIENT_SECRET)%'
+
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
