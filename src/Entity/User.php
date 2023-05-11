@@ -292,6 +292,13 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 		);
 	}
 
+	public function getServiceConnection(string $serviceName): ?Connection
+	{
+		return $this->connections->filter(
+			fn(Connection $connection) => $connection->getService() === $serviceName
+		)->first();
+	}
+
 	/**
 	 * @return DateTimeImmutable|null
 	 */

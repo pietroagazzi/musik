@@ -2,7 +2,6 @@
 
 namespace App\EventSubscriber;
 
-use App\Entity\Connection;
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
@@ -52,8 +51,10 @@ readonly class ExceptionSubscriber implements EventSubscriberInterface
 			return;
 		}
 
-		// get the user spotify connection
-		$connection = $this->getSpotifyConnection();
+		// get the user's spotify connection
+		/** @var User $user */
+		$user = $this->security->getUser();
+		$connection = $user->getServiceConnection("spotify");
 
 		// if the user has no spotify connection, do nothing
 		if (!$connection) {
@@ -86,24 +87,5 @@ readonly class ExceptionSubscriber implements EventSubscriberInterface
 
 		// stop the propagation of the original request
 		$event->stopPropagation();
-	}
-
-	/**
-	 * gets the user spotify connection
-	 *
-	 * @return Connection|false
-	 */
-	protected function getSpotifyConnection(): Connection|false
-	{
-		/**
-		 * @var User $user
-		 */
-		$user = $this->security->getUser();
-
-		return $user
-			->getConnections()
-			->filter(
-				fn(Connection $connection) => $connection->getService() === 'spotify'
-			)->first();
 	}
 }
