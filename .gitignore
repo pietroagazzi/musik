@@ -14,11 +14,6 @@
 .phpunit.result.cache
 ###< phpunit/phpunit ###
 
-###> symfony/phpunit-bridge ###
-.phpunit.result.cache
-/phpunit.xml
-###< symfony/phpunit-bridge ###
-
 ### Composer template
 composer.phar
 
@@ -164,3 +159,18 @@ fabric.properties
 npm-debug.log
 yarn-error.log
 ###< symfony/webpack-encore-bundle ###
+
+###> squizlabs/php_codesniffer ###
+/.phpcs-cache
+/.php_cs.cache
+/phpcs.xml
+###< squizlabs/php_codesniffer ###
+
+###> php-cs-fixer ###
+/.php-cs-fixer.cache
+###< php-cs-fixer ###
+
+###> .phpdoc ###
+.phpdoc
+phpDocumentor.phar
+###< .phpdoc ###

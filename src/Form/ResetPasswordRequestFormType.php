@@ -8,24 +8,36 @@ use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\NotBlank;
 
+/**
+ * defines the form fields and validation for the reset password request form.
+ */
 class ResetPasswordRequestFormType extends AbstractType
 {
-    public function buildForm(FormBuilderInterface $builder, array $options): void
-    {
-        $builder
-            ->add('email', EmailType::class, [
-                'attr' => ['autocomplete' => 'email'],
-                'constraints' => [
-                    new NotBlank([
-                        'message' => 'Please enter your email',
-                    ]),
-                ],
-            ])
-        ;
-    }
+	/**
+	 * @inheritDoc
+	 */
+	public function buildForm(FormBuilderInterface $builder, array $options): void
+	{
+		$builder
+			->add(
+				'email', EmailType::class, [
+					'attr' => ['autocomplete' => 'email'],
+					'constraints' => [
+						new NotBlank(
+							[
+								'message' => 'Please enter your email',
+							]
+						),
+					],
+				]
+			);
+	}
 
-    public function configureOptions(OptionsResolver $resolver): void
-    {
-        $resolver->setDefaults([]);
-    }
+	/**
+	 * @inheritDoc
+	 */
+	public function configureOptions(OptionsResolver $resolver): void
+	{
+		$resolver->setDefaults([]);
+	}
 }

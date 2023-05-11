@@ -28,6 +28,7 @@
       </option>
       <option name="myCustomValuesEnabled" value="true" />
     </inspection_tool>
+    <inspection_tool class="MessDetectorValidationInspection" enabled="true" level="WEAK WARNING" enabled_by_default="true" />
     <inspection_tool class="PyNoneFunctionAssignmentInspection" enabled="true" level="WEAK WARNING" enabled_by_default="true">
       <scope name="Project Files" level="WEAK WARNING" enabled="true" />
     </inspection_tool>

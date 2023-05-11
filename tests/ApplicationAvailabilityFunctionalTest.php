@@ -23,7 +23,7 @@ class ApplicationAvailabilityFunctionalTest extends WebTestCase
             ['/'],
             ['/login'],
             ['/register'],
-            ['/reset-password'],
+            ['/reset'],
         ];
     }
 }

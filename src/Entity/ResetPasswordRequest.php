@@ -5,49 +5,48 @@ namespace App\Entity;
 use App\Repository\ResetPasswordRequestRepository;
 use DateTimeInterface;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Security\Core\User\UserInterface;
 use SymfonyCasts\Bundle\ResetPassword\Model\ResetPasswordRequestInterface;
 use SymfonyCasts\Bundle\ResetPassword\Model\ResetPasswordRequestTrait;
 
 #[ORM\Entity(repositoryClass: ResetPasswordRequestRepository::class)]
 class ResetPasswordRequest implements ResetPasswordRequestInterface
 {
-    use ResetPasswordRequestTrait;
+	use ResetPasswordRequestTrait;
 
-    #[ORM\Id]
-    #[ORM\GeneratedValue]
-    #[ORM\Column]
-    private ?int $id = null;
+	#[ORM\Id]
+	#[ORM\GeneratedValue]
+	#[ORM\Column]
+	private ?int $id = null;
 
-    #[ORM\ManyToOne]
-    #[ORM\JoinColumn(nullable: false)]
-    private ?User $user;
+	#[ORM\ManyToOne]
+	#[ORM\JoinColumn(nullable: false)]
+	private ?User $user;
 
-    /**
-     * @param User|null $user
-     * @param DateTimeInterface $expiresAt
-     * @param string $selector
-     * @param string $hashedToken
-     */
-    public function __construct(?User $user, DateTimeInterface $expiresAt, string $selector, string $hashedToken)
-    {
-        $this->user = $user;
-        $this->initialize($expiresAt, $selector, $hashedToken);
-    }
+	/**
+	 * @param User|null $user
+	 * @param DateTimeInterface $expiresAt
+	 * @param string $selector
+	 * @param string $hashedToken
+	 */
+	public function __construct(?User $user, DateTimeInterface $expiresAt, string $selector, string $hashedToken)
+	{
+		$this->user = $user;
+		$this->initialize($expiresAt, $selector, $hashedToken);
+	}
 
-    /**
-     * @return int|null
-     */
-    public function getId(): ?int
-    {
-        return $this->id;
-    }
+	/**
+	 * @return int|null
+	 */
+	public function getId(): ?int
+	{
+		return $this->id;
+	}
 
-    /**
-     * @return object
-     */
-    public function getUser(): object
-    {
-        return $this->user;
-    }
+	/**
+	 * @return object
+	 */
+	public function getUser(): object
+	{
+		return $this->user;
+	}
 }
