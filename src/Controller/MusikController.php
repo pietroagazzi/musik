@@ -2,7 +2,6 @@
 
 namespace App\Controller;
 
-use App\Api\SpotifyStats;
 use App\Entity\User;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -47,8 +46,6 @@ class MusikController extends AbstractController
 		$session->setAccessToken($user->getServiceConnection('spotify')->getToken());
 		$api = new SpotifyWebAPI();
 		$api->setSession($session);
-
-
 
 		$topArtists = $api->getMyTop('artists', [
 			'time_range' => 'long_term',
