@@ -10,6 +10,7 @@ use SpotifyWebAPI\SpotifyWebAPI;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use function dump;
 
 /**
  * controller for the musik pages
@@ -42,21 +43,26 @@ class MusikController extends AbstractController
 			throw $this->createNotFoundException('User not found');
 		}
 
+		$connection = $user->getServiceConnection('spotify');
+
 		// build spotify api
-		$session->setAccessToken($user->getServiceConnection('spotify')->getToken());
-		$api = new SpotifyWebAPI();
-		$api->setSession($session);
+		$session->setAccessToken($connection->getToken());
+		$session->setRefreshToken($connection->getRefresh());
+		$api = new SpotifyWebAPI([
+			'auto_refresh' => true,
+		], $session);
 
-		$topArtists = $api->getMyTop('artists', [
-			'time_range' => 'long_term',
-			'limit' => 10,
-		]);
+		// update token if changed
+		if ($session->getAccessToken() !== $connection->getToken()) {
+			$connection->setToken($session->getAccessToken());
+			$connection->setRefresh($session->getRefreshToken());
 
-		\dump($topArtists);
+			$this->entityManager->persist($connection);
+			$this->entityManager->flush();
+		}
 
 		return $this->render('musik/user.html.twig', [
 			'user' => $user,
-			'topArtists' => $topArtists,
 		]);
 	}
 }

@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Entity\Connection;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -37,6 +38,19 @@ class ConnectionRepository extends ServiceEntityRepository
 		if ($flush) {
 			$this->getEntityManager()->flush();
 		}
+	}
+
+	/**
+	 * @return Connection|null Returns a Connection object or null
+	 * @throws NonUniqueResultException
+	 */
+	public function findOneByRefresh(string $value): ?Connection
+	{
+		return $this->createQueryBuilder('c')
+			->andWhere('c.refreshToken = :val')
+			->setParameter('val', $value)
+			->getQuery()
+			->getOneOrNullResult();
 	}
 
 	//    /**
