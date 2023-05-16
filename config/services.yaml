@@ -21,7 +21,7 @@ services:
             - '../src/Kernel.php'
 
     # spotify session
-    SpotifyWebAPI\Session:
+    App\Spotify\Session:
         arguments:
             - '%env(SPOTIFY_CLIENT_ID)%'
             - '%env(SPOTIFY_CLIENT_SECRET)%'

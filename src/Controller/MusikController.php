@@ -3,14 +3,14 @@
 namespace App\Controller;
 
 use App\Entity\User;
-use App\Repository\UserRepository;
+use App\Spotify\Session;
+use App\Spotify\SpotifyWebApi;
+use App\Spotify\TokenRefreshObserver;
 use Doctrine\ORM\EntityManagerInterface;
-use SpotifyWebAPI\Session;
-use SpotifyWebAPI\SpotifyWebAPI;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use function dump;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 /**
  * controller for the musik pages
@@ -24,45 +24,38 @@ class MusikController extends AbstractController
 	}
 
 	/**
+	 *
+	 * @param Session $session
+	 * @param User|null $user
 	 * @return Response
 	 */
 	#[Route('', name: 'app_home')]
-	public function index(): Response
+	public function index(Session $session, ?UserInterface $user): Response
 	{
+		if ($user) {
+			$connection = $user->getServiceConnection('spotify');
+			$session->attach(new TokenRefreshObserver($this->entityManager));
+
+			if ($connection) {
+				$session->setAccessToken($connection->getToken());
+				$session->setRefreshToken($connection->getRefresh());
+
+				$api = new SpotifyWebApi([
+					'auto_refresh' => true,
+					'auto_retry' => true,
+					'return_assoc' => true,
+				], $session);
+
+				$api->setAccessToken($connection->getToken());
+			}
+		}
+
 		return $this->render('musik/index.html.twig');
 	}
 
 	#[Route('{username}', name: 'app_user', requirements: ['username' => '[a-zA-Z0-9]{4,}'], priority: -1)]
 	public function user(string $username, Session $session): Response
 	{
-		/** @var UserRepository $userRepository */
-		$userRepository = $this->entityManager->getRepository(User::class);
-		$user = $userRepository->findOneBy(['username' => $username]);
-
-		if (!$user) {
-			throw $this->createNotFoundException('User not found');
-		}
-
-		$connection = $user->getServiceConnection('spotify');
-
-		// build spotify api
-		$session->setAccessToken($connection->getToken());
-		$session->setRefreshToken($connection->getRefresh());
-		$api = new SpotifyWebAPI([
-			'auto_refresh' => true,
-		], $session);
-
-		// update token if changed
-		if ($session->getAccessToken() !== $connection->getToken()) {
-			$connection->setToken($session->getAccessToken());
-			$connection->setRefresh($session->getRefreshToken());
-
-			$this->entityManager->persist($connection);
-			$this->entityManager->flush();
-		}
-
-		return $this->render('musik/user.html.twig', [
-			'user' => $user,
-		]);
+		return new Response();
 	}
 }

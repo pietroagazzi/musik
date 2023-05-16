@@ -4,9 +4,13 @@ namespace App\Spotify;
 
 use SplObserver;
 use SplSubject;
-use SpotifyWebAPI\Session as SpotifySession;
 
-class Session extends SpotifySession implements SplSubject
+/**
+ * Observer subject for spotify token refresh
+ * @see https://www.php.net/manual/en/class.splobserver.php
+ * @see https://en.wikipedia.org/wiki/Observer_pattern
+ */
+class Session extends \SpotifyWebAPI\Session implements SplSubject
 {
 	private array $observers = [];
 

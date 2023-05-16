@@ -5,9 +5,13 @@ namespace App\Spotify;
 use App\Entity\Connection;
 use App\Repository\ConnectionRepository;
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\NonUniqueResultException;
 use SplSubject;
 
+/**
+ * Observer for spotify token refresh
+ * @see https://www.php.net/manual/en/class.splobserver.php
+ * @see https://en.wikipedia.org/wiki/Observer_pattern
+ */
 readonly class TokenRefreshObserver implements \SplObserver
 {
 	public function __construct(
@@ -16,17 +20,18 @@ readonly class TokenRefreshObserver implements \SplObserver
 	{
 	}
 
-	/**
-	 * @throws NonUniqueResultException if the refresh token is not unique
-	 */
 	public function update(Session|SplSubject $subject): void
 	{
 		/** @var ConnectionRepository $connectionRepository */
 		$connectionRepository = $this->entityManager
 			->getRepository(Connection::class);
 
+		$userServiceId = (new SpotifyWebApi())
+			->setAccessToken($subject->getAccessToken())
+			->getUserServiceId();
+
 		$connection = $connectionRepository
-			->findOneByRefresh($subject->getRefreshToken());
+			->findOneBy(['user_service_id' => $userServiceId]);
 
 		$connection->setToken($subject->getAccessToken());
 		$connection->setRefresh($subject->getRefreshToken());

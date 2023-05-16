@@ -8,6 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: ConnectionRepository::class)]
 #[ORM\UniqueConstraint(name: 'service_user_unique', fields: ['service', 'user'])]
+#[ORM\UniqueConstraint(name: 'service_user_service_id_unique', fields: ['service', 'user_service_id'])]
 #[ORM\HasLifecycleCallbacks]
 class Connection
 {
@@ -34,6 +35,12 @@ class Connection
 
 	#[ORM\Column]
 	private ?DateTimeImmutable $updated_at = null;
+
+	/**
+	 * @var string|null The identifier of the user in the service (e.g. spotify user id)
+	 */
+	#[ORM\Column(length: 255)]
+	private ?string $user_service_id = null;
 
 	/**
 	 * @return int|null
@@ -153,6 +160,18 @@ class Connection
 	public function setUpdatedAt(DateTimeImmutable $updated_at): self
 	{
 		$this->updated_at = $updated_at;
+
+		return $this;
+	}
+
+	public function getUserServiceId(): ?string
+	{
+		return $this->user_service_id;
+	}
+
+	public function setUserServiceId(string $user_service_id): self
+	{
+		$this->user_service_id = $user_service_id;
 
 		return $this;
 	}

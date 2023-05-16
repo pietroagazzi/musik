@@ -54,7 +54,7 @@ class SpotifyController extends AbstractController
 					'playlist-read-collaborative',
 					'playlist-modify-private',
 					'playlist-modify-public',
-					'user-top-read'
+					# 'user-top-read'
 				]
 			);
 	}
@@ -106,6 +106,7 @@ class SpotifyController extends AbstractController
 			->setService('spotify')
 			->setToken($accessToken->getToken())
 			->setRefresh($accessToken->getRefreshToken())
+			->setUserServiceId($provider->getResourceOwner($accessToken)->getId())
 			->setUser($user);
 
 		// save the connection
