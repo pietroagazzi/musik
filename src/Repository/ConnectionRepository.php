@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Connection;
+use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\Persistence\ManagerRegistry;
@@ -17,11 +18,19 @@ use Doctrine\Persistence\ManagerRegistry;
  */
 class ConnectionRepository extends ServiceEntityRepository
 {
+	/**
+	 * @param ManagerRegistry $registry
+	 */
 	public function __construct(ManagerRegistry $registry)
 	{
 		parent::__construct($registry, Connection::class);
 	}
 
+	/**
+	 * @param Connection $entity
+	 * @param bool $flush
+	 * @return void
+	 */
 	public function save(Connection $entity, bool $flush = false): void
 	{
 		$this->getEntityManager()->persist($entity);
@@ -31,6 +40,11 @@ class ConnectionRepository extends ServiceEntityRepository
 		}
 	}
 
+	/**
+	 * @param Connection $entity
+	 * @param bool $flush
+	 * @return void
+	 */
 	public function remove(Connection $entity, bool $flush = false): void
 	{
 		$this->getEntityManager()->remove($entity);
@@ -41,14 +55,31 @@ class ConnectionRepository extends ServiceEntityRepository
 	}
 
 	/**
-	 * @return Connection|null Returns a Connection object or null
-	 * @throws NonUniqueResultException
+	 * returns true if an account is already exists for the given service
+	 *
+	 * @param string $service the service name (e.g. spotify)
+	 * @param string $userServiceId the id of the user in the service
+	 * @param User|null $user the user to exclude
+	 * @return bool
+	 * @throws NonUniqueResultException if more than one connection is found
 	 */
-	public function findOneByRefresh(string $value): ?Connection
+	public function connectionAlreadyExists(string $service, string $userServiceId, User $user = null): bool
 	{
-		return $this->createQueryBuilder('c')
-			->andWhere('c.refreshToken = :val')
-			->setParameter('val', $value)
+		$queryBuilder = $this->createQueryBuilder('c')
+			->andWhere('c.service = :service')
+			->andWhere('c.user_service_id = :userServiceId')
+			->setParameter('service', $service)
+			->setParameter('userServiceId', $userServiceId);
+
+
+		// if a user is given, exclude it
+		if ($user) {
+			$queryBuilder
+				->andWhere('c.user != :user')
+				->setParameter('user', $user);
+		}
+
+		return (bool)$queryBuilder
 			->getQuery()
 			->getOneOrNullResult();
 	}

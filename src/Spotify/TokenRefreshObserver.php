@@ -9,8 +9,11 @@ use SplSubject;
 
 /**
  * Observer for spotify token refresh
+ *
  * @see https://www.php.net/manual/en/class.splobserver.php
  * @see https://en.wikipedia.org/wiki/Observer_pattern
+ *
+ * @author Pietro Agazzi <agazzi_pietro@protonmail.com>
  */
 readonly class TokenRefreshObserver implements \SplObserver
 {
@@ -26,9 +29,9 @@ readonly class TokenRefreshObserver implements \SplObserver
 		$connectionRepository = $this->entityManager
 			->getRepository(Connection::class);
 
-		$userServiceId = (new SpotifyWebApi())
+		$userServiceId = (new Client())
 			->setAccessToken($subject->getAccessToken())
-			->getUserServiceId();
+			->getUserId();
 
 		$connection = $connectionRepository
 			->findOneBy(['user_service_id' => $userServiceId]);

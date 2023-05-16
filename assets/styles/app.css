@@ -243,3 +243,8 @@ img {
 :focus {
     outline: 0;
 }
+
+.top-carousel {
+    margin-top: 3rem;
+    margin-bottom: 3rem;
+}

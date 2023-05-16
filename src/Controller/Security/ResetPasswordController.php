@@ -161,6 +161,7 @@ class ResetPasswordController extends AbstractController
 		}
 
 		try {
+			/** @var User $user */
 			$user = $this->resetPasswordHelper->validateTokenAndFetchUser($token);
 		} catch (ResetPasswordExceptionInterface $e) {
 			// if the token is invalid, get the reason from the exception and set it as a flash message

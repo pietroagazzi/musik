@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Musik{% endblock %}
+{% block title %}Musik | {{ user.username|capitalize }}{% endblock %}
 
 {% block body %}
     <main class="responsive-wrapper">
@@ -9,8 +9,29 @@
         </div>
     </main>
 
-    <section class="responsive-wrapper">
-        <div class="top-tracks">
-        </div>
-    </section>
+    <!-- user's stats -->
+    <div>
+        {% if spotify_api.isUsable %}
+            <!-- top artists -->
+            <div class="top-carousel">
+                <h2>Top Artists</h2>
+                <p>in last 6 months</p>
+                {% for artist in spotify_api.getMyTop("artists", {"limit": 10, "offset": 0}).items %}
+                    <img src="{{ artist.images[2].url }}" alt="{{ artist.name }}">
+                    <a href="{{ artist.external_urls.spotify }}" target="_blank"><p>{{ artist.name }}</p></a>
+                {% endfor %}
+            </div>
+
+            <!-- top tracks -->
+            <div class="top-carousel">
+                <h2>Top Tracks</h2>
+                <p>in last 6 months</p>
+                {% for track in spotify_api.getMyTop("tracks", {"limit": 10, "offset": 0}).items %}
+                    <img src="{{ track.album.images[2].url }}" alt="{{ track.name }}">
+                    <a href="{{ track.external_urls.spotify }}" target="_blank"><p>{{ track.name }}</p></a>
+                    <!-- play count -->
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
 {% endblock %}

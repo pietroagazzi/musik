@@ -20,11 +20,28 @@ services:
             - '../src/Entity/'
             - '../src/Kernel.php'
 
-    # spotify session
-    App\Spotify\Session:
+    # spotify session factory
+    App\Spotify\SessionFactory:
+        autowire: true
         arguments:
             - '%env(SPOTIFY_CLIENT_ID)%'
             - '%env(SPOTIFY_CLIENT_SECRET)%'
+
+    App\Spotify\Session:
+        factory: [ '@App\Spotify\SessionFactory', 'asTokenObserverClient' ]
+        # arguments:
+        #     - '%env(SPOTIFY_CLIENT_ID)%'
+        #     - '%env(SPOTIFY_CLIENT_SECRET)%'
+
+    # spotify api client
+    App\Spotify\ClientFactory:
+        autowire: true
+        arguments:
+            # session
+            - '@App\Spotify\Session'
+
+    App\Spotify\Client:
+        factory: [ '@App\Spotify\ClientFactory', 'create' ]
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

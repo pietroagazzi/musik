@@ -4,7 +4,9 @@ namespace App\Controller\Service;
 
 use App\Entity\Connection;
 use App\Entity\User;
+use App\Repository\ConnectionRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\NonUniqueResultException;
 use Exception;
 use Kerox\OAuth2\Client\Provider\Spotify;
 use KnpU\OAuth2ClientBundle\Client\ClientRegistry;
@@ -64,6 +66,7 @@ class SpotifyController extends AbstractController
 	 *
 	 * @param Request $request
 	 * @return Response
+	 * @throws NonUniqueResultException
 	 */
 	#[Route('/check', name: 'check')]
 	public function check(Request $request): Response
@@ -74,7 +77,7 @@ class SpotifyController extends AbstractController
 		}
 
 		// check if the user has already connected to Spotify
-		if ($user->hasServiceConnection('spotify')) {
+		if ($user->hasConnection('spotify')) {
 			$this->addFlash('error', 'You have already connected to Spotify!');
 
 			return $this->redirectToRoute('app_home');
@@ -84,9 +87,7 @@ class SpotifyController extends AbstractController
 		$client = $this->clientRegistry->getClient('spotify_main');
 
 		try {
-			/**
-			 * @var Spotify $provider
-			 */
+			/* @var Spotify $provider */
 			$provider = $client->getOAuth2Provider();
 
 			// get the access token
@@ -97,6 +98,21 @@ class SpotifyController extends AbstractController
 			);
 		} catch (Exception $e) {
 			$this->addFlash('error', $e->getMessage());
+			return $this->redirectToRoute('app_home');
+		}
+
+		// get the user service id
+		$userServiceId = $provider->getResourceOwner($accessToken)->getId();
+
+		// check if the user service has already connected to Spotify
+		/** @var ConnectionRepository $connectionRepository */
+		$connectionRepository = $this->entityManager->getRepository(Connection::class);
+
+		// if the user service has already connected to Spotify redirect to app_home
+		if ($connectionRepository->connectionAlreadyExists('spotify', $userServiceId, $user)) {
+			$this->addFlash('error', 'This account is already connected');
+
+			// redirect to app_home
 			return $this->redirectToRoute('app_home');
 		}
 

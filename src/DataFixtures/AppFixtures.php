@@ -42,6 +42,7 @@ class AppFixtures extends Fixture
 	{
 		yield 'fabien';
 		yield 'kevin';
+		yield 'john';
 	}
 
 	/**

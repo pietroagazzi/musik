@@ -285,14 +285,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 	 * @param string $serviceName
 	 * @return bool
 	 */
-	public function hasServiceConnection(string $serviceName): bool
+	public function hasConnection(string $serviceName): bool
 	{
-		return $this->connections->exists(
-			fn(int $key, Connection $connection) => $connection->getService() === $serviceName
-		);
+		return $this->getConnection($serviceName) !== false;
 	}
 
-	public function getServiceConnection(string $serviceName): ?Connection
+	/**
+	 * returns the connection to the given service or false if the user has no connection to the given service
+	 *
+	 * @param string $serviceName
+	 * @return Connection|false
+	 */
+	public function getConnection(string $serviceName): Connection|false
 	{
 		return $this->connections->filter(
 			fn(Connection $connection) => $connection->getService() === $serviceName

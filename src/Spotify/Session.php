@@ -7,8 +7,14 @@ use SplSubject;
 
 /**
  * Observer subject for spotify token refresh
+ *
+ * Notifies all observers when the access token is refreshed
+ * This is commonly used to update the database with the new token
+ *
  * @see https://www.php.net/manual/en/class.splobserver.php
  * @see https://en.wikipedia.org/wiki/Observer_pattern
+ *
+ * @author Pietro Agazzi <agazzi_pietro@protonmail.com>
  */
 class Session extends \SpotifyWebAPI\Session implements SplSubject
 {

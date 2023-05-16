@@ -3,7 +3,6 @@
 namespace App\EventListener;
 
 use App\Entity\User;
-use Exception;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 use Symfony\Component\HttpFoundation\Session\Flash\FlashBagInterface;
@@ -26,16 +25,8 @@ readonly class UserAuthenticationListener
 	 *
 	 * @param InteractiveLoginEvent $event
 	 * @return void
-	 * @throws Exception
 	 */
 	public function onSecurityInteractiveLogin(
-		InteractiveLoginEvent $event
-	): void
-	{
-		$this->addFlashIfNotVerified($event);
-	}
-
-	private function addFlashIfNotVerified(
 		InteractiveLoginEvent $event
 	): void
 	{
