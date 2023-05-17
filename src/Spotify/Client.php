@@ -3,6 +3,7 @@
 namespace App\Spotify;
 
 use SpotifyWebAPI\SpotifyWebAPI;
+use SpotifyWebAPI\SpotifyWebAPIException;
 
 /**
  * Adds some functionality to the SpotifyWebAPI class
@@ -66,5 +67,29 @@ class Client extends SpotifyWebAPI
 	public function getUserId(): string
 	{
 		return $this->me()->id;
+	}
+
+	/**
+	 * adds support for the 403 Forbidden error at the parent sendRequest method
+	 *
+	 * @throws SpotifyWebAPIException 403 Forbidden If the request is understood
+	 * @inheritDoc
+	 */
+	public function sendRequest($method, $uri, $parameters = [], $headers = []): array
+	{
+		try {
+			$response = parent::sendRequest($method, $uri, $parameters, $headers);
+		} catch (SpotifyWebAPIException $e) {
+			match ($e->getCode()) {
+				/**
+				 * 403 Forbidden
+				 * The request is understood, use this exception to disconnect the user from the provider
+				 */
+				403 => throw new SpotifyWebAPIException('Bad OAuth request', $e->getCode(), $e),
+				default => throw $e,
+			};
+		}
+
+		return $response;
 	}
 }

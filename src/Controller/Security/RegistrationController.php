@@ -23,7 +23,9 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 use SymfonyCasts\Bundle\VerifyEmail\Exception\VerifyEmailExceptionInterface;
 
 /**
- * controller used to manage registration.
+ * Controller used to manage registration
+ *
+ * @author Pietro Agazzi <agazzi_pietro@protonmail.com>
  */
 class RegistrationController extends AbstractController
 {

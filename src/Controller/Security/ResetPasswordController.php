@@ -21,6 +21,8 @@ use SymfonyCasts\Bundle\ResetPassword\ResetPasswordHelperInterface;
 
 /**
  * controller used to manage the resetting of the password.
+ *
+ * @author Pietro Agazzi <agazzi_pietro@protonmail.com>
  */
 #[Route('/reset')]
 class ResetPasswordController extends AbstractController

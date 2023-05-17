@@ -264,42 +264,26 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 	}
 
 	/**
-	 * @param Connection $connection
-	 * @return $this
-	 */
-	public function removeConnection(Connection $connection): self
-	{
-		if ($this->connections->removeElement($connection)) {
-			// set the owning side to null (unless already changed)
-			if ($connection->getUser() === $this) {
-				$connection->setUser(null);
-			}
-		}
-
-		return $this;
-	}
-
-	/**
-	 * returns true if the user has a connection to the given service
+	 * returns true if the user has a connection to the given provider
 	 *
-	 * @param string $serviceName
+	 * @param string $providerName
 	 * @return bool
 	 */
-	public function hasConnection(string $serviceName): bool
+	public function hasConnection(string $providerName): bool
 	{
-		return $this->getConnection($serviceName) !== false;
+		return $this->getConnection($providerName) !== false;
 	}
 
 	/**
-	 * returns the connection to the given service or false if the user has no connection to the given service
+	 * returns the connection to the given provider or false if the user has no connection to the given provider
 	 *
-	 * @param string $serviceName
+	 * @param string $providerName
 	 * @return Connection|false
 	 */
-	public function getConnection(string $serviceName): Connection|false
+	public function getConnection(string $providerName): Connection|false
 	{
 		return $this->connections->filter(
-			fn(Connection $connection) => $connection->getService() === $serviceName
+			fn(Connection $connection) => $connection->getProvider() === $providerName
 		)->first();
 	}
 

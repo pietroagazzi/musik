@@ -29,12 +29,12 @@ readonly class TokenRefreshObserver implements \SplObserver
 		$connectionRepository = $this->entityManager
 			->getRepository(Connection::class);
 
-		$userServiceId = (new Client())
+		$providerUserId = (new Client())
 			->setAccessToken($subject->getAccessToken())
 			->getUserId();
 
 		$connection = $connectionRepository
-			->findOneBy(['user_service_id' => $userServiceId]);
+			->findOneBy(['provider_user_id' => $providerUserId]);
 
 		$connection->setToken($subject->getAccessToken());
 		$connection->setRefresh($subject->getRefreshToken());

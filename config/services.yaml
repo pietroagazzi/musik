@@ -43,5 +43,10 @@ services:
     App\Spotify\Client:
         factory: [ '@App\Spotify\ClientFactory', 'create' ]
 
+    # Exception subscriber
+    App\EventSubscriber\ExceptionSubscriber:
+        tags:
+            - { name: kernel.event_subscriber }
+
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

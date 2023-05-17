@@ -52,17 +52,17 @@ class MusikController extends AbstractController
 		$userRepository = $this->entityManager->getRepository(User::class);
 
 		/** @var User $user */
-		if ($user = $userRepository->findOneByUsername($username)) {
-			if ($connection = $user->getConnection('spotify')) {
-				$client
-					->setAccessToken($connection->getToken())
-					->setRefreshToken($connection->getRefresh());
-			}
+		if (!$user = $userRepository->findOneByUsername($username)) {
+			throw $this->createNotFoundException('User not found');
 		}
 
-		return $this->render('musik/user.html.twig', [
-			'user' => $user,
-			'spotify_api' => $client
-		]);
+		if ($connection = $user->getConnection('spotify')) {
+			$client
+				->setAccessToken($connection->getToken())
+				->setRefreshToken($connection->getRefresh());
+		}
+
+		return $this->render('musik/user.html.twig', ['user' => $user,
+			'spotify_api' => $client]);
 	}
 }

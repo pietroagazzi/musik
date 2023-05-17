@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Controller\Service;
+namespace App\Controller\Provider;
 
 use App\Entity\Connection;
 use App\Entity\User;
@@ -56,7 +56,7 @@ class SpotifyController extends AbstractController
 					'playlist-read-collaborative',
 					'playlist-modify-private',
 					'playlist-modify-public',
-					# 'user-top-read'
+					'user-top-read'
 				]
 			);
 	}
@@ -101,15 +101,14 @@ class SpotifyController extends AbstractController
 			return $this->redirectToRoute('app_home');
 		}
 
-		// get the user service id
-		$userServiceId = $provider->getResourceOwner($accessToken)->getId();
+		// get the provider user id
+		$providerUserId = $provider->getResourceOwner($accessToken)->getId();
 
-		// check if the user service has already connected to Spotify
 		/** @var ConnectionRepository $connectionRepository */
 		$connectionRepository = $this->entityManager->getRepository(Connection::class);
 
-		// if the user service has already connected to Spotify redirect to app_home
-		if ($connectionRepository->connectionAlreadyExists('spotify', $userServiceId, $user)) {
+		// if the user has already connected to Spotify redirect to app_home
+		if ($connectionRepository->connectionAlreadyExists('spotify', $providerUserId, $user)) {
 			$this->addFlash('error', 'This account is already connected');
 
 			// redirect to app_home
@@ -119,10 +118,10 @@ class SpotifyController extends AbstractController
 		// create the connection
 		$connection = new Connection();
 		$connection
-			->setService('spotify')
+			->setProvider('spotify')
 			->setToken($accessToken->getToken())
 			->setRefresh($accessToken->getRefreshToken())
-			->setUserServiceId($provider->getResourceOwner($accessToken)->getId())
+			->setProviderUserId($provider->getResourceOwner($accessToken)->getId())
 			->setUser($user);
 
 		// save the connection

@@ -55,21 +55,21 @@ class ConnectionRepository extends ServiceEntityRepository
 	}
 
 	/**
-	 * returns true if an account is already exists for the given service
+	 * returns true if an account is already exists for the given provider
 	 *
-	 * @param string $service the service name (e.g. spotify)
-	 * @param string $userServiceId the id of the user in the service
+	 * @param string $provider the provider name (e.g. spotify)
+	 * @param string $providerUserId the id of the user in the provider
 	 * @param User|null $user the user to exclude
 	 * @return bool
 	 * @throws NonUniqueResultException if more than one connection is found
 	 */
-	public function connectionAlreadyExists(string $service, string $userServiceId, User $user = null): bool
+	public function connectionAlreadyExists(string $provider, string $providerUserId, User $user = null): bool
 	{
 		$queryBuilder = $this->createQueryBuilder('c')
-			->andWhere('c.service = :service')
-			->andWhere('c.user_service_id = :userServiceId')
-			->setParameter('service', $service)
-			->setParameter('userServiceId', $userServiceId);
+			->andWhere('c.provider = :provider')
+			->andWhere('c.provider_user_id = :providerUserId')
+			->setParameter('provider', $provider)
+			->setParameter('providerUserId', $providerUserId);
 
 
 		// if a user is given, exclude it

@@ -7,8 +7,8 @@ use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: ConnectionRepository::class)]
-#[ORM\UniqueConstraint(name: 'service_user_unique', fields: ['service', 'user'])]
-#[ORM\UniqueConstraint(name: 'service_user_service_id_unique', fields: ['service', 'user_service_id'])]
+#[ORM\UniqueConstraint(name: 'provider_user_unique', fields: ['provider', 'user'])]
+#[ORM\UniqueConstraint(name: 'provider_provider_user_unique', fields: ['provider', 'provider_user_id'])]
 #[ORM\HasLifecycleCallbacks]
 class Connection
 {
@@ -18,7 +18,7 @@ class Connection
 	private ?int $id = null;
 
 	#[ORM\Column(length: 255)]
-	private ?string $service = null;
+	private ?string $provider = null;
 
 	#[ORM\ManyToOne(inversedBy: 'connections')]
 	#[ORM\JoinColumn(nullable: false)]
@@ -30,17 +30,17 @@ class Connection
 	#[ORM\Column(length: 500)]
 	private ?string $refresh = null;
 
+	/**
+	 * @var string|null The identifier of the user in the provider (e.g. spotify user id)
+	 */
+	#[ORM\Column(length: 255)]
+	private ?string $provider_user_id = null;
+
 	#[ORM\Column]
 	private ?DateTimeImmutable $created_at = null;
 
 	#[ORM\Column]
 	private ?DateTimeImmutable $updated_at = null;
-
-	/**
-	 * @var string|null The identifier of the user in the service (e.g. spotify user id)
-	 */
-	#[ORM\Column(length: 255)]
-	private ?string $user_service_id = null;
 
 	/**
 	 * @return int|null
@@ -53,18 +53,18 @@ class Connection
 	/**
 	 * @return string|null
 	 */
-	public function getService(): ?string
+	public function getProvider(): ?string
 	{
-		return $this->service;
+		return $this->provider;
 	}
 
 	/**
-	 * @param string $service
+	 * @param string $provider
 	 * @return $this
 	 */
-	public function setService(string $service): self
+	public function setProvider(string $provider): self
 	{
-		$this->service = $service;
+		$this->provider = $provider;
 
 		return $this;
 	}
@@ -164,14 +164,23 @@ class Connection
 		return $this;
 	}
 
-	public function getUserServiceId(): ?string
+	/**
+	 * get provider user id (e.g. spotify user id)
+	 *
+	 * @return string|null
+	 */
+	public function getProviderUserId(): ?string
 	{
-		return $this->user_service_id;
+		return $this->provider_user_id;
 	}
 
-	public function setUserServiceId(string $user_service_id): self
+	/**
+	 * @param string $provider_user_id
+	 * @return $this
+	 */
+	public function setProviderUserId(string $provider_user_id): self
 	{
-		$this->user_service_id = $user_service_id;
+		$this->provider_user_id = $provider_user_id;
 
 		return $this;
 	}
