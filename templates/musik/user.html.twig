@@ -9,6 +9,21 @@
         </div>
     </main>
 
+    <!-- follow user -->
+    <div {{ stimulus_controller('follow') }}>
+        <button
+                data-follow-url-value="{{ path('api_action_follow', {'user_id': user.id}) }}"
+                {{ stimulus_action('follow', 'toggle') }}
+                data-following="{{ app.user.following(user) ? 1 : 0 }}"
+        >
+            {% if app.user.following(user) %}
+                Unfollow
+            {% else %}
+                Follow
+            {% endif %}
+        </button>
+    </div>
+
     <!-- user's stats -->
     <div>
         {% if spotify_api.isUsable %}

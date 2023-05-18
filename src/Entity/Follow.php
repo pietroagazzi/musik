@@ -2,13 +2,14 @@
 
 namespace App\Entity;
 
-use App\Repository\FollowerRepository;
+use App\Repository\FollowRepository;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity(repositoryClass: FollowerRepository::class)]
+#[ORM\Entity(repositoryClass: FollowRepository::class)]
+#[ORM\UniqueConstraint(fields: ['followed', 'follower'])]
 #[ORM\HasLifecycleCallbacks]
-class Follower
+class Follow
 {
 	#[ORM\Id]
 	#[ORM\GeneratedValue]
@@ -22,7 +23,7 @@ class Follower
 	 */
 	#[ORM\ManyToOne(inversedBy: 'followers')]
 	#[ORM\JoinColumn(nullable: false)]
-	private ?User $user = null;
+	private ?User $followed = null;
 
 	/**
 	 * user who follows
@@ -45,25 +46,31 @@ class Follower
 	}
 
 	/**
+	 * get user who is followed
+	 *
 	 * @return User|null
 	 */
-	public function getUser(): ?User
+	public function getFollowed(): ?User
 	{
-		return $this->user;
+		return $this->followed;
 	}
 
 	/**
-	 * @param User|null $user
+	 * set user who is followed
+	 *
+	 * @param User|null $followed
 	 * @return $this
 	 */
-	public function setUser(?User $user): self
+	public function setFollowed(?User $followed): self
 	{
-		$this->user = $user;
+		$this->followed = $followed;
 
 		return $this;
 	}
 
 	/**
+	 * get user who follows
+	 *
 	 * @return User|null
 	 */
 	public function getFollower(): ?User
@@ -72,6 +79,8 @@ class Follower
 	}
 
 	/**
+	 * set user who follows
+	 *
 	 * @param User|null $follower
 	 * @return $this
 	 */

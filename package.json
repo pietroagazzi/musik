@@ -22,6 +22,8 @@
 		"build": "encore production --progress"
 	},
 	"dependencies": {
+		"npm": "^9.6.6",
+		"stimulus": "^3.2.1",
 		"toastify-js": "^1.12.0"
 	}
 }

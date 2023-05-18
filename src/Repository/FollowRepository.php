@@ -2,26 +2,36 @@
 
 namespace App\Repository;
 
-use App\Entity\Follower;
+use App\Entity\Follow;
+use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * @extends ServiceEntityRepository<Follower>
+ * @extends ServiceEntityRepository<Follow>
  *
- * @method Follower|null find($id, $lockMode = null, $lockVersion = null)
- * @method Follower|null findOneBy(array $criteria, array $orderBy = null)
- * @method Follower[]    findAll()
- * @method Follower[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
+ * @method Follow|null find($id, $lockMode = null, $lockVersion = null)
+ * @method Follow|null findOneBy(array $criteria, array $orderBy = null)
+ * @method Follow[]    findAll()
+ * @method Follow[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
-class FollowerRepository extends ServiceEntityRepository
+class FollowRepository extends ServiceEntityRepository
 {
 	public function __construct(ManagerRegistry $registry)
 	{
-		parent::__construct($registry, Follower::class);
+		parent::__construct($registry, Follow::class);
 	}
 
-	public function save(Follower $entity, bool $flush = false): void
+	public function follow(User $follower, User $followed): void
+	{
+		$entity = new Follow();
+		$entity->setFollower($follower);
+		$entity->setFollowed($followed);
+
+		$this->save($entity, true);
+	}
+
+	public function save(Follow $entity, bool $flush = false): void
 	{
 		$this->getEntityManager()->persist($entity);
 
@@ -30,7 +40,19 @@ class FollowerRepository extends ServiceEntityRepository
 		}
 	}
 
-	public function remove(Follower $entity, bool $flush = false): void
+	public function unfollow(User $follower, User $followed): void
+	{
+		$follow = $this->findOneBy([
+			'follower' => $follower,
+			'followed' => $followed
+		]);
+
+		if ($follow) {
+			$this->remove($follow, true);
+		}
+	}
+
+	public function remove(Follow $entity, bool $flush = false): void
 	{
 		$this->getEntityManager()->remove($entity);
 

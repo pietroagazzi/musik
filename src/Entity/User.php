@@ -60,10 +60,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 	#[ORM\Column]
 	private ?DateTimeImmutable $updated_at = null;
 
-	#[ORM\OneToMany(mappedBy: 'user', targetEntity: Follower::class, orphanRemoval: true)]
+	#[ORM\OneToMany(mappedBy: 'followed', targetEntity: Follow::class, orphanRemoval: true)]
 	private Collection $followers;
 
-	#[ORM\OneToMany(mappedBy: 'follower', targetEntity: Follower::class, orphanRemoval: true)]
+	#[ORM\OneToMany(mappedBy: 'follower', targetEntity: Follow::class, orphanRemoval: true)]
 	private Collection $following;
 
 	public function __construct()
@@ -351,80 +351,75 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 	/**
 	 * get users that follow this user
 	 *
-	 * @return Collection<int, Follower>
+	 * @return Collection<int, User>
 	 */
 	public function getFollowers(): Collection
 	{
-		return $this->followers;
+		return $this->followers->map(fn(Follow $follow) => $follow->getFollower());
 	}
 
 	/**
-	 * @param Follower $follower
+	 * @param User $follower
 	 * @return $this
 	 */
-	public function addFollower(Follower $follower): self
+	public function addFollower(User $follower): self
 	{
-		if (!$this->followers->contains($follower)) {
-			$this->followers->add($follower);
-			$follower->setUser($this);
+		if (!$this->followedBy($follower)) {
+			$follow = new Follow();
+			$follow->setFollower($follower);
+			$follow->setFollowed($this);
+			$this->followers->add($follow);
 		}
 
 		return $this;
 	}
 
 	/**
-	 * @param Follower $follower
-	 * @return $this
+	 * returns true if the given user follows this user
 	 */
-	public function removeFollower(Follower $follower): self
+	public function followedBy(User $user): bool
 	{
-		if ($this->followers->removeElement($follower)) {
-			// set the owning side to null (unless already changed)
-			if ($follower->getUser() === $this) {
-				$follower->setUser(null);
-			}
-		}
-
-		return $this;
+		return $this->followers->filter(
+				fn(Follow $follower) => $follower->getFollower() === $user
+			)->count() > 0;
 	}
 
 	/**
 	 * get users that this user is following
 	 *
-	 * @return Collection<int, Follower>
+	 * @return Collection<int, User>
 	 */
 	public function getFollowing(): Collection
 	{
-		return $this->following;
+		return $this->following->map(fn(Follow $follow) => $follow->getFollowed());
 	}
 
 	/**
-	 * @param Follower $following
+	 * @param User $following
 	 * @return $this
 	 */
-	public function addFollowing(Follower $following): self
+	public function addFollowing(User $following): self
 	{
-		if (!$this->following->contains($following)) {
-			$this->following->add($following);
-			$following->setFollower($this);
+		if (!$this->following($following)) {
+			$follow = new Follow();
+			$follow->setFollower($this);
+			$follow->setFollowed($following);
+			$this->following->add($follow);
 		}
 
 		return $this;
 	}
 
 	/**
-	 * @param Follower $following
-	 * @return $this
+	 * returns true if the user follows the given user
+	 *
+	 * @param User $user
+	 * @return bool
 	 */
-	public function removeFollowing(Follower $following): self
+	public function following(User $user): bool
 	{
-		if ($this->following->removeElement($following)) {
-			// set the owning side to null (unless already changed)
-			if ($following->getFollower() === $this) {
-				$following->setFollower(null);
-			}
-		}
-
-		return $this;
+		return $this->following->filter(
+				fn(Follow $follower) => $follower->getFollowed() === $user
+			)->count() > 0;
 	}
 }

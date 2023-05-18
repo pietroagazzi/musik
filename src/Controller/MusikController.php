@@ -10,6 +10,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Security\Http\Attribute\CurrentUser;
 
 /**
  * controller for the musik pages
@@ -46,7 +47,11 @@ class MusikController extends AbstractController
 	}
 
 	#[Route('{username}', name: 'app_user', requirements: ['username' => '[a-zA-Z0-9]{4,}'], priority: -1)]
-	public function user(string $username, Client $client): Response
+	public function user(
+		string              $username,
+		Client              $client,
+		#[CurrentUser] User $currentUser
+	): Response
 	{
 		/** @var UserRepository $userRepository */
 		$userRepository = $this->entityManager->getRepository(User::class);
@@ -56,13 +61,19 @@ class MusikController extends AbstractController
 			throw $this->createNotFoundException('User not found');
 		}
 
+		if ($user === $currentUser) {
+			# TODO: handle this
+		}
+
 		if ($connection = $user->getConnection('spotify')) {
 			$client
 				->setAccessToken($connection->getToken())
 				->setRefreshToken($connection->getRefresh());
 		}
 
-		return $this->render('musik/user.html.twig', ['user' => $user,
-			'spotify_api' => $client]);
+		return $this->render('musik/user.html.twig', [
+			'user' => $user,
+			'spotify_api' => $client
+		]);
 	}
 }
