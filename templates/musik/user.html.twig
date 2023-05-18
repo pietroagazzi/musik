@@ -14,7 +14,8 @@
         <button
                 data-follow-url-value="{{ path('api_action_follow', {'user_id': user.id}) }}"
                 {{ stimulus_action('follow', 'toggle') }}
-                data-following="{{ app.user.following(user) ? 1 : 0 }}"
+                data-following-value="{{ app.user.following(user) ? 1 : 0 }}"
+                data-csrf-value="{{ csrf_token('api_action') }}"
         >
             {% if app.user.following(user) %}
                 Unfollow
