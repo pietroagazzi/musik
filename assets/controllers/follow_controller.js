@@ -18,13 +18,15 @@ export default class extends Controller {
                         throw new Error('Something went wrong: ' + response.statusText);
                     }
 
-                    return response.json();
-                })
-                .then(data => {
-                    let token = data.csrf_token;
+                    // get the new csrf token
+                    let token = response.headers.get('x-csrf-token');
 
+                    // update the csrf token
                     event.target.setAttribute('data-csrf-value', token);
 
+                    return response.json();
+                })
+                .then(() => {
                     // update isFollowing attribute
                     event.target.setAttribute('data-following-value', '0');
                     // update text content
@@ -37,13 +39,15 @@ export default class extends Controller {
                         throw new Error('Something went wrong: ' + response.statusText);
                     }
 
+                    // get the new csrf token
+                    let token = response.headers.get('x-csrf-token');
+
+                    // update the csrf token
+                    event.target.setAttribute('data-csrf-value', token);
+
                     return response.json();
                 })
-                .then(data => {
-                    let token = data.csrf_token;
-
-                    event.target.setAttribute('data-csrf-value', token);
-                    
+                .then(() => {
                     // update isFollowing attribute
                     event.target.setAttribute('data-following-value', '1');
                     // update text content

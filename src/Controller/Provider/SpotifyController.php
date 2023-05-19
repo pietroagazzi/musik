@@ -102,7 +102,8 @@ class SpotifyController extends AbstractController
 		}
 
 		// get the provider user id
-		$providerUserId = $provider->getResourceOwner($accessToken)->getId();
+		$resourceOwner = $provider->getResourceOwner($accessToken);
+		$providerUserId = $resourceOwner->getId();
 
 		/** @var ConnectionRepository $connectionRepository */
 		$connectionRepository = $this->entityManager->getRepository(Connection::class);
