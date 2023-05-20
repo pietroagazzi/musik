@@ -66,12 +66,16 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 	#[ORM\OneToMany(mappedBy: 'follower', targetEntity: Follow::class, orphanRemoval: true)]
 	private Collection $following;
 
+	#[ORM\OneToMany(mappedBy: 'user', targetEntity: Post::class)]
+	private Collection $posts;
+
 	public function __construct()
 	{
 		$this->emailVerificationRequests = new ArrayCollection();
 		$this->connections = new ArrayCollection();
 		$this->followers = new ArrayCollection();
 		$this->following = new ArrayCollection();
+		$this->posts = new ArrayCollection();
 	}
 
 	/**
@@ -159,10 +163,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 	/**
 	 * @see UserInterface
 	 */
-	public function eraseCredentials()
+	public function eraseCredentials(): void
 	{
-		// If you store any temporary, sensitive data on the user, clear it here
-		// $this->plainPassword = null;
 	}
 
 	/**
@@ -231,11 +233,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 	 */
 	public function removeEmailVerificationRequest(EmailVerificationRequest $emailVerificationRequest): self
 	{
-		if ($this->emailVerificationRequests->removeElement($emailVerificationRequest)) {
-			// set the owning side to null (unless already changed)
-			if ($emailVerificationRequest->getUser() === $this) {
-				$emailVerificationRequest->setUser(null);
-			}
+		// set the owning side to null (unless already changed)
+		if ($this->emailVerificationRequests->removeElement($emailVerificationRequest)
+			&& $emailVerificationRequest->getUser() === $this) {
+			$emailVerificationRequest->setUser(null);
 		}
 
 		return $this;
@@ -413,13 +414,37 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 	/**
 	 * returns true if the user follows the given user
 	 *
-	 * @param User $user
+	 * @param User $user the user to check if this user follows
 	 * @return bool
 	 */
 	public function following(User $user): bool
 	{
-		return $this->following->filter(
-				fn(Follow $follower) => $follower->getFollowed() === $user
-			)->count() > 0;
+		return $user->followedBy($this);
+	}
+
+	/**
+	 * returns a collection of posts that this user has posted
+	 *
+	 * @return Collection<int, Post>
+	 */
+	public function getPosts(): Collection
+	{
+		return $this->posts;
+	}
+
+	/**
+	 * adds a new post created by this user
+	 *
+	 * @param Post $post
+	 * @return $this
+	 */
+	public function addPost(Post $post): self
+	{
+		if (!$this->posts->contains($post)) {
+			$this->posts->add($post);
+			$post->setUser($this);
+		}
+
+		return $this;
 	}
 }

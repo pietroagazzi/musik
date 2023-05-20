@@ -13,11 +13,11 @@ use Symfony\Component\Security\Csrf\CsrfToken;
 use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use function is_array;
 
-final class ActionRequestSubscriber implements EventSubscriberInterface
+final readonly class ActionRequestSubscriber implements EventSubscriberInterface
 {
 	public function __construct(
-		private readonly CsrfTokenManagerInterface $csrfTokenManager,
-		private readonly Security                  $security
+		private CsrfTokenManagerInterface $csrfTokenManager,
+		private Security                  $security
 	)
 	{
 	}

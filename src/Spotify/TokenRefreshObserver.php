@@ -5,6 +5,7 @@ namespace App\Spotify;
 use App\Entity\Connection;
 use App\Repository\ConnectionRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use SplObserver;
 use SplSubject;
 
 /**
@@ -15,7 +16,7 @@ use SplSubject;
  *
  * @author Pietro Agazzi <agazzi_pietro@protonmail.com>
  */
-readonly class TokenRefreshObserver implements \SplObserver
+readonly class TokenRefreshObserver implements SplObserver
 {
 	public function __construct(
 		private EntityManagerInterface $entityManager
