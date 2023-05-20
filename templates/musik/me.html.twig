@@ -1,0 +1,49 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Musik{% endblock %}
+
+{% block body %}
+    <main class="responsive-wrapper">
+        <div class="page-title">
+            <h1>Latest Updates</h1>
+        </div>
+
+        <!-- oauth buttons -->
+        <div>
+            <!-- spotify -->
+            {% if app.user and not app.user.hasConnection('spotify') %}
+                <a href="{{ path('connect_spotify_start') }}">
+                    Connect with Spotify
+                </a>
+            {% endif %}
+        </div>
+
+        <!-- user's stats -->
+        <div>
+            {% if spotify_api.isUsable %}
+                <!-- top artists -->
+                <div class="top-carousel">
+                    <h2>Top Artists</h2>
+                    <p>in last 6 months</p>
+                    {% for artist in spotify_api.getMyTop("artists", {"limit": 10, "offset": 0}).items %}
+                        <img src="{{ artist.images[2].url }}" alt="{{ artist.name }}">
+                        <a href="{{ artist.external_urls.spotify }}" target="_blank"><p>{{ artist.name }}</p></a>
+                    {% endfor %}
+                </div>
+
+                <!-- top tracks -->
+                <div class="top-carousel">
+                    <h2>Top Tracks</h2>
+                    <p>in last 6 months</p>
+                    {% for track in spotify_api.getMyTop("tracks", {"limit": 10, "offset": 0}).items %}
+                        <img src="{{ track.album.images[2].url }}" alt="{{ track.name }}">
+                        <a href="{{ track.external_urls.spotify }}" target="_blank"><p>{{ track.name }}</p></a>
+                        <!-- play count -->
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p>Data is no available</p>
+            {% endif %}
+        </div>
+    </main>
+{% endblock %}

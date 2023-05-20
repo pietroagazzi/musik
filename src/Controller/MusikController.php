@@ -27,6 +27,7 @@ class MusikController extends AbstractController
 	}
 
 	/**
+	 * home page
 	 *
 	 * @param User|null $user
 	 * @param Client $spotify
@@ -35,7 +36,7 @@ class MusikController extends AbstractController
 	#[Route('', name: 'app_home')]
 	public function index(?UserInterface $user, Client $spotify): Response
 	{
-		if ($user and $connection = $user->getConnection('spotify')) {
+		if ($user && $connection = $user->getConnection('spotify')) {
 			$spotify
 				->setAccessToken($connection->getToken())
 				->setRefreshToken($connection->getRefresh());
@@ -46,6 +47,14 @@ class MusikController extends AbstractController
 		]);
 	}
 
+	/**
+	 * page for the current user
+	 *
+	 * @param string $username
+	 * @param Client $client
+	 * @param User $currentUser
+	 * @return Response
+	 */
 	#[Route('{username}', name: 'app_user', requirements: ['username' => '[a-zA-Z0-9]{4,}'], priority: -1)]
 	public function user(
 		string              $username,
@@ -57,20 +66,26 @@ class MusikController extends AbstractController
 		$userRepository = $this->entityManager->getRepository(User::class);
 
 		/** @var User $user */
-		if (!$user = $userRepository->findOneByUsername($username)) {
+		if ((!$user = $userRepository->findOneByUsername($username))) {
 			throw $this->createNotFoundException('User not found');
 		}
 
-		if ($user === $currentUser) {
-			# TODO: handle this
-		}
-
+		// if the user is logged in and has a spotify connection, set the access token and refresh token
 		if ($connection = $user->getConnection('spotify')) {
 			$client
 				->setAccessToken($connection->getToken())
 				->setRefreshToken($connection->getRefresh());
 		}
 
+		// if the user is the current user, render 'me' page
+		if ($user === $currentUser) {
+			return $this->render('musik/me.html.twig', [
+				'user' => $user,
+				'spotify_api' => $client
+			]);
+		}
+
+		// render the user page
 		return $this->render('musik/user.html.twig', [
 			'user' => $user,
 			'spotify_api' => $client
