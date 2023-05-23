@@ -6,24 +6,24 @@ use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
 class ApplicationAvailabilityFunctionalTest extends WebTestCase
 {
-    /**
-     * @dataProvider urlProvider
-     */
-    public function testPageIsSuccessful($url): void
-    {
-        $client = static::createClient();
-        $client->request('GET', $url);
+	/**
+	 * @dataProvider urlProvider
+	 */
+	public function testPageIsSuccessful($url): void
+	{
+		$client = static::createClient();
+		$client->request('GET', $url);
 
-        $this->assertResponseIsSuccessful();
-    }
+		self::assertResponseIsSuccessful();
+	}
 
-    public function urlProvider(): array
-    {
-        return [
-            ['/'],
-            ['/login'],
-            ['/register'],
-            ['/reset'],
-        ];
-    }
+	public function urlProvider(): array
+	{
+		return [
+			['/'],
+			['/login'],
+			['/register'],
+			['/reset'],
+		];
+	}
 }
