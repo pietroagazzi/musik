@@ -7,7 +7,7 @@ use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 class ApplicationAvailabilityFunctionalTest extends WebTestCase
 {
 	/**
-	 * @dataProvider urlProvider
+	 * @dataProvider musikControllerProvider
 	 */
 	public function testPageIsSuccessful($url): void
 	{
@@ -17,10 +17,10 @@ class ApplicationAvailabilityFunctionalTest extends WebTestCase
 		self::assertResponseIsSuccessful();
 	}
 
-	public function urlProvider(): array
+	public function musikControllerProvider(): array
 	{
 		return [
-			['/'],
+			[''],
 			['/login'],
 			['/register'],
 			['/reset'],

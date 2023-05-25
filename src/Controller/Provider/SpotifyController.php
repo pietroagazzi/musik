@@ -37,11 +37,11 @@ class SpotifyController extends AbstractController
 	 *
 	 * @return Response
 	 */
-	#[Route('/', name: 'start', methods: ['GET'])]
+	#[Route('', name: 'start', methods: ['GET'])]
 	public function index(): Response
 	{
 		// if the user is not logged in, redirect to home
-		if (!$this->getUser() or !$this->getUser() instanceof User) {
+		if (!$this->getUser() || !$this->getUser() instanceof User) {
 			return $this->redirectToRoute('app_home');
 		}
 
