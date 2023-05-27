@@ -6,10 +6,12 @@ use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\{PasswordType, RepeatedType};
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Component\Validator\Constraints\{Length, NotBlank};
+use Symfony\Component\Validator\Constraints\{Length, NotBlank, Regex};
 
 /**
- * defines the form used to change the user password
+ * Defines the form used to change the user password
+ *
+ * @author Pietro Agazzi <agazzi_pietro@protonmail.com>
  */
 class ChangePasswordFormType extends AbstractType
 {
@@ -24,24 +26,25 @@ class ChangePasswordFormType extends AbstractType
 					'type' => PasswordType::class,
 					'options' => [
 						'attr' => [
-							'autocomplete' => 'new-password',
+							'autocomplete' => 'off',
 						],
 					],
 					'first_options' => [
 						'constraints' => [
 							new NotBlank(
-								[
-									'message' => 'Please enter a password',
-								]
+								message: 'The password cannot be blank',
 							),
 							new Length(
-								[
-									'min' => 6,
-									'minMessage' => 'Your password should be at least {{ limit }} characters',
-									// max length allowed by Symfony for security reasons
-									'max' => 4096,
-								]
+								min: 8,
+								// max length allowed by Symfony for security reasons
+								max: 4096,
+								minMessage: 'Your password should be at least {{ limit }} characters'
 							),
+							new Regex(
+								pattern: '/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*(_|[^\w])).+$/',
+								message: 'Your password should contain at least one uppercase letter, one lowercase 
+								letter, one number and one special character'
+							)
 						],
 						'label' => 'New password',
 					],

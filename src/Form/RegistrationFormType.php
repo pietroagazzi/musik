@@ -26,21 +26,6 @@ class RegistrationFormType extends AbstractType
 					'attr' => [
 						'placeholder' => 'Email',
 					],
-					'constraints' => [
-						new NotBlank(
-							[
-								'message' => 'Please enter an email',
-							]
-						),
-						new Length(
-							[
-								'min' => 8,
-								'minMessage' => 'Your email should be at least {{ limit }} characters',
-								'max' => 60,
-								'maxMessage' => 'Your email should be at most {{ limit }} characters',
-							]
-						),
-					],
 				]
 			)
 			->add(
@@ -48,27 +33,6 @@ class RegistrationFormType extends AbstractType
 					'label' => 'Username',
 					'attr' => [
 						'placeholder' => 'Username',
-					],
-					'constraints' => [
-						new NotBlank(
-							[
-								'message' => 'Please enter a username',
-							]
-						),
-						new Length(
-							[
-								'min' => 4,
-								'minMessage' => 'Your username should be at least {{ limit }} characters',
-								'max' => 18,
-								'maxMessage' => 'Your username should be at most {{ limit }} characters',
-							]
-						),
-						new Regex(
-							[
-								'pattern' => '/^[a-zA-Z0-9_]+$/',
-								'message' => 'Your username should only contain letters, numbers and underscores',
-							]
-						),
 					],
 				]
 			)

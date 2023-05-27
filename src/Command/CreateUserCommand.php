@@ -3,42 +3,38 @@
 namespace App\Command;
 
 use App\Entity\User;
+use App\Repository\UserRepository;
+use App\Utils\UserValidator;
 use Doctrine\ORM\EntityManagerInterface;
+use InvalidArgumentException;
+use RuntimeException;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\{InputInterface, InputOption};
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use Symfony\Component\Stopwatch\Stopwatch;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use function sprintf;
 
+/**
+ * Used to create a new user
+ */
 #[AsCommand(
-	name: 'app:user:create',
-	description: 'Creates a new user',
+	name: 'app:user:add',
+	description: 'Creates a new user and saves it to the database',
+	aliases: ['app:user:create', 'app:user:new']
 )]
 final class CreateUserCommand extends Command
 {
-	use UserCommandTrait;
+	private SymfonyStyle $io;
 
-	/**
-	 * @var array|string[] $exampleUsernames An array of example usernames
-	 */
-	protected static array $exampleUsernames = [
-		'wouter',
-		'jordi',
-		'ryan',
-		'fabien',
-	];
-
-	/**
-	 * @param ValidatorInterface $validator
-	 * @param UserPasswordHasherInterface $passwordHasher
-	 * @param EntityManagerInterface $entityManager
-	 */
 	public function __construct(
-		private readonly ValidatorInterface          $validator,
+		private readonly UserValidator               $validator,
 		private readonly UserPasswordHasherInterface $passwordHasher,
-		private readonly EntityManagerInterface      $entityManager
+		private readonly EntityManagerInterface      $entityManager,
+		private readonly UserRepository              $userRepository,
 	)
 	{
 		parent::__construct();
@@ -47,10 +43,57 @@ final class CreateUserCommand extends Command
 	/**
 	 * @inheritDoc
 	 */
+	public function initialize(InputInterface $input, OutputInterface $output): void
+	{
+		$this->io = new SymfonyStyle($input, $output);
+	}
+
+	/**
+	 * @inheritDoc
+	 */
 	protected function configure(): void
 	{
 		$this
+			->addArgument('email', null, 'The email of the user')
+			->addArgument('username', null, 'The username of the user')
+			->addArgument('password', null, 'The password of the user')
 			->addOption('verified', null, InputOption::VALUE_NONE, 'Set the user as verified');
+	}
+
+	/**
+	 * @inheritDoc
+	 */
+	protected function interact(InputInterface $input, OutputInterface $output): void
+	{
+		// ask for email if it's not defined
+		$email = $input->getArgument('email');
+
+		if ($email) {
+			$this->io->text('* <info>Email</info>: ' . $email);
+		} else {
+			$email = $this->io->ask('Email', null, $this->validator->validateEmail(...));
+			$input->setArgument('email', $email);
+		}
+
+		// ask for username if it's not defined
+		$username = $input->getArgument('username');
+
+		if ($username) {
+			$this->io->text('* <info>Username</info>: ' . $username);
+		} else {
+			$username = $this->io->ask('Username', null, $this->validator->validateUsername(...));
+			$input->setArgument('username', $username);
+		}
+
+		// ask for password if it's not defined
+		$password = $input->getArgument('password');
+
+		if ($password) {
+			$this->io->text('* <info>Password</info>: ' . $password);
+		} else {
+			$password = $this->io->askHidden('Password', $this->validator->validatePassword(...));
+			$input->setArgument('password', $password);
+		}
 	}
 
 	/**
@@ -58,74 +101,64 @@ final class CreateUserCommand extends Command
 	 */
 	protected function execute(InputInterface $input, OutputInterface $output): int
 	{
-		$io = new SymfonyStyle($input, $output);
+		/* @see https://symfony.com/doc/3.4/components/stopwatch.html */
+		$stopwatch = new Stopwatch();
+		$stopwatch->start('create-user-command');
 
-		// create a new user
-		$user = new User();
+		$email = $input->getArgument('email');
+		$username = $input->getArgument('username');
+		$plainPassword = $input->getArgument('password');
 
-		// choose a random username
-		$randomUsername = self::$exampleUsernames[array_rand(self::$exampleUsernames)];
+		$this->validateUserData($email, $username, $plainPassword);
 
-		// ask for the username
-		$username = $io->ask(
-			"What is the username of the user?", $randomUsername, function ($username) use ($user) {
-			$user->setUsername($username);
+		$user = new User;
 
-			// validate the username
-			$this->validateUser($user, 'username');
+		/* @see https://symfony.com/doc/5.4/security.html#registering-the-user-hashing-passwords */
+		$password = $this->passwordHasher->hashPassword($user, $plainPassword);
 
-			return $username;
-		}
-		);
+		$user
+			->setUsername($username)
+			->setEmail($email)
+			->setPassword($password);
 
-		// ask for the email
-		$io->ask(
-			'What is the email of the user?', "$username@example.com", function ($email) use ($user) {
-			$user->setEmail($email);
-
-			// validate the email
-			$this->validateUser($user, 'email');
-		}
-		);
-
-		// ask for the password
-		$io->askHidden(
-			'What is the password of the user?', function ($plainPassword) use ($user) {
-			// hash the password
-			$hash = $this->passwordHasher->hashPassword($user, $plainPassword);
-			$user->setPassword($hash);
-		}
-		);
-
-		// ask for the roles
-		$io->ask(
-			'What are the roles of the user? (separate with a empty space)', null, function ($roles) use ($user) {
-			if (!empty($roles)) {
-				$user->setRoles(explode(' ', $roles));
-			}
-		}
-		);
-
-		// set the user as verified if the option is set
 		if ($input->getOption('verified')) {
 			$user->setIsVerified(true);
 		}
 
-		// save the user to the database
 		$this->entityManager->persist($user);
 		$this->entityManager->flush();
 
-		// show a success message
-		$io->success("User $username (ID: {$user->getId()}) was created successfully!");
+		$event = $stopwatch->stop('create-user-command');
 
-		// show the next steps
-		if (!$user->isVerified()) {
-			$io->text("Now: Verify the user's email");
+		// if verbose mode is enabled (--verbose), display some extra information about the command execution
+		if ($output->isVerbose()) {
+			$this->io->comment(sprintf(
+				'New user database id: %d / Elapsed time: %.2f ms / Consumed memory: %.2f MB',
+				$user->getId(), $event->getDuration(), $event->getMemory() / (1024 ** 2)
+			));
 		}
 
-		$io->text("Next: Review the user's profile by running: \"php bin/console app:user:show {$user->getId()}\"");
-		$io->text("Than: Update the user's profile by running: \"php bin/console app:user:update {$user->getId()}\"");
+		$this->io->success(sprintf(
+			'Successfully created user: %s %s',
+			$user->getUsername(),
+			$user->isVerified() ? '(verified)' : ''
+		));
 
 		return Command::SUCCESS;
+	}
+
+	protected function validateUserData(string $email, string $username, string $plainPassword): void
+	{
+		$this->validator->validateEmail($email);
+		$this->validator->validateUsername($username);
+		$this->validator->validatePassword($plainPassword);
+
+		if ($this->userRepository->findOneBy(['email' => $email])) {
+			throw new RuntimeException(sprintf('The email "%s" is already used', $email));
+		}
+
+		if ($this->userRepository->findOneBy(['username' => $username])) {
+			throw new RuntimeException(sprintf('The username "%s" is already used', $username));
+		}
 	}
 }

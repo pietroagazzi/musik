@@ -45,9 +45,11 @@ trait UserCommandTrait
 		$errors = $this->validator->validate($user);
 
 		// if the propriety is not defined, throw an exception if the user is not valid
-		if ($propriety === null and $errors->count() > 0) {
+		if ($propriety === null && $errors->count() > 0) {
 			throw new InvalidArgumentException(sprintf('User "%s" is not valid', $user->getUsername()));
-		} elseif ($propriety !== null and $errors->count() > 0) {
+		}
+
+		if ($propriety !== null && $errors->count() > 0) {
 			// if the propriety is defined, throw an exception if the user is not valid
 			foreach ($errors as $error) {
 				// if the error is related to the propriety, throw an exception

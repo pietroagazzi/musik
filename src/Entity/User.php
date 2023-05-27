@@ -13,6 +13,14 @@ use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Validator\Constraints as Assert;
 
+/**
+ * Defines the properties of the User entity to represent the application users.
+ *
+ * @see https://symfony.com/doc/current/security.html#the-user
+ * @see https://symfony.com/doc/current/doctrine.html#creating-an-entity-class.
+ *
+ * @author Pietro Agazzi <agazzi_pietro@protonmail.com>
+ */
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: '`user`')]
 #[UniqueEntity(fields: ['email'], message: 'There is already an account with this email')]
@@ -30,6 +38,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 	#[Assert\NotBlank(message: 'Email cannot be blank.')]
 	private ?string $email = null;
 
+	/**
+	 * @var string[]
+	 */
 	#[ORM\Column]
 	private array $roles = [];
 
@@ -41,14 +52,27 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
 	#[ORM\Column(length: 30, unique: true)]
 	#[Assert\NotBlank(message: 'Username cannot be blank.')]
-	#[Assert\Length(min: 4, max: 18, minMessage: 'Your username should be at least {{ limit }} characters', maxMessage: 'Your username should be at most {{ limit }} characters')]
-	#[Assert\Regex(pattern: '/^[a-zA-Z0-9_]+$/', message: 'Your username can only contain letters, numbers and underscores')]
+	#[Assert\Length(
+		min: 4,
+		max: 18,
+		minMessage: 'Your username should be at least {{ limit }} characters',
+		maxMessage: 'Your username should be at most {{ limit }} characters'
+	)]
+	#[Assert\Regex(
+		pattern: '/^[a-zA-Z0-9_]+$/',
+		message: 'Your username can only contain letters, numbers and underscores'
+	)]
 	private ?string $username = null;
 
 	#[ORM\Column(type: 'boolean')]
 	private bool $isVerified = false;
 
-	#[ORM\OneToMany(mappedBy: 'user', targetEntity: EmailVerificationRequest::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
+	#[ORM\OneToMany(
+		mappedBy: 'user',
+		targetEntity: EmailVerificationRequest::class,
+		cascade: ['persist', 'remove'],
+		orphanRemoval: true
+	)]
 	private Collection $emailVerificationRequests;
 
 	#[ORM\OneToMany(mappedBy: 'user', targetEntity: Connection::class)]
@@ -71,6 +95,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
 	public function __construct()
 	{
+		// initialize properties
 		$this->emailVerificationRequests = new ArrayCollection();
 		$this->connections = new ArrayCollection();
 		$this->followers = new ArrayCollection();
@@ -78,26 +103,16 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 		$this->posts = new ArrayCollection();
 	}
 
-	/**
-	 * @return int|null
-	 */
 	public function getId(): ?int
 	{
 		return $this->id;
 	}
 
-	/**
-	 * @return string|null
-	 */
 	public function getEmail(): ?string
 	{
 		return $this->email;
 	}
 
-	/**
-	 * @param string $email
-	 * @return $this
-	 */
 	public function setEmail(string $email): self
 	{
 		$this->email = $email;
@@ -106,8 +121,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 	}
 
 	/**
-	 * A visual identifier that represents this user.
-	 *
+	 * @inheritDoc
 	 * @see UserInterface
 	 */
 	public function getUserIdentifier(): string
@@ -116,6 +130,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 	}
 
 	/**
+	 * @return string[]
 	 * @see UserInterface
 	 */
 	public function getRoles(): array
@@ -127,10 +142,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 		return array_unique($roles);
 	}
 
-	/**
-	 * @param array $roles
-	 * @return $this
-	 */
 	public function setRoles(array $roles): self
 	{
 		// ignore the ROLE_USER role, it's added automatically
@@ -149,10 +160,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 		return $this->password;
 	}
 
-	/**
-	 * @param string $password
-	 * @return $this
-	 */
 	public function setPassword(#[SensitiveParameter] string $password): self
 	{
 		$this->password = $password;
@@ -161,43 +168,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 	}
 
 	/**
-	 * @see UserInterface
+	 * @inheritDoc
 	 */
 	public function eraseCredentials(): void
 	{
 	}
 
-	/**
-	 * @return string|null
-	 */
-	public function getUsername(): ?string
-	{
-		return $this->username;
-	}
-
-	/**
-	 * @param string $username
-	 * @return $this
-	 */
-	public function setUsername(string $username): self
-	{
-		$this->username = $username;
-
-		return $this;
-	}
-
-	/**
-	 * @return bool
-	 */
 	public function isVerified(): bool
 	{
 		return $this->isVerified;
 	}
 
-	/**
-	 * @param bool $isVerified
-	 * @return $this
-	 */
 	public function setIsVerified(bool $isVerified): self
 	{
 		$this->isVerified = $isVerified;
@@ -206,40 +187,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 	}
 
 	/**
-	 * @return Collection<int, EmailVerificationRequest>
+	 * @return Collection<EmailVerificationRequest> the email verification requests of this user
 	 */
 	public function getEmailVerificationRequests(): Collection
 	{
 		return $this->emailVerificationRequests;
-	}
-
-	/**
-	 * @param EmailVerificationRequest $emailVerificationRequest
-	 * @return $this
-	 */
-	public function addEmailVerificationRequest(EmailVerificationRequest $emailVerificationRequest): self
-	{
-		if (!$this->emailVerificationRequests->contains($emailVerificationRequest)) {
-			$this->emailVerificationRequests->add($emailVerificationRequest);
-			$emailVerificationRequest->setUser($this);
-		}
-
-		return $this;
-	}
-
-	/**
-	 * @param EmailVerificationRequest $emailVerificationRequest
-	 * @return $this
-	 */
-	public function removeEmailVerificationRequest(EmailVerificationRequest $emailVerificationRequest): self
-	{
-		// set the owning side to null (unless already changed)
-		if ($this->emailVerificationRequests->removeElement($emailVerificationRequest)
-			&& $emailVerificationRequest->getUser() === $this) {
-			$emailVerificationRequest->setUser(null);
-		}
-
-		return $this;
 	}
 
 	/**
@@ -251,8 +203,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 	}
 
 	/**
-	 * @param Connection $connection
-	 * @return $this
+	 * adds a connection to this user
 	 */
 	public function addConnection(Connection $connection): self
 	{
@@ -267,8 +218,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 	/**
 	 * returns true if the user has a connection to the given provider
 	 *
-	 * @param string $providerName
-	 * @return bool
+	 * @param string $providerName the name of the provider (e.g. spotify)
 	 */
 	public function hasConnection(string $providerName): bool
 	{
@@ -278,8 +228,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 	/**
 	 * returns the connection to the given provider or false if the user has no connection to the given provider
 	 *
-	 * @param string $providerName
-	 * @return Connection|false
+	 * @param string $providerName the name of the provider (e.g. spotify)
 	 */
 	public function getConnection(string $providerName): Connection|false
 	{
@@ -288,18 +237,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 		)->first();
 	}
 
-	/**
-	 * @return DateTimeImmutable|null
-	 */
 	public function getCreatedAt(): ?DateTimeImmutable
 	{
 		return $this->created_at;
 	}
 
-	/**
-	 * @param DateTimeImmutable $created_at
-	 * @return $this
-	 */
 	public function setCreatedAt(DateTimeImmutable $created_at): self
 	{
 		$this->created_at = $created_at;
@@ -307,18 +249,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 		return $this;
 	}
 
-	/**
-	 * @return DateTimeImmutable|null
-	 */
 	public function getUpdatedAt(): ?DateTimeImmutable
 	{
 		return $this->updated_at;
 	}
 
-	/**
-	 * @param DateTimeImmutable $updated_at
-	 * @return $this
-	 */
 	public function setUpdatedAt(DateTimeImmutable $updated_at): self
 	{
 		$this->updated_at = $updated_at;
@@ -327,32 +262,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 	}
 
 	/**
-	 * executes before persisting the entity
-	 *
-	 * @return void
-	 */
-	#[ORM\PrePersist]
-	public function prePersist(): void
-	{
-		$this->created_at = new DateTimeImmutable();
-		$this->updated_at = new DateTimeImmutable();
-	}
-
-	/**
-	 * executes before updating the entity
-	 *
-	 * @return void
-	 */
-	#[ORM\PreUpdate]
-	public function preUpdate(): void
-	{
-		$this->updated_at = new DateTimeImmutable();
-	}
-
-	/**
 	 * get users that follow this user
 	 *
-	 * @return Collection<int, User>
+	 * @return Collection<int, User> the users that follow this user
 	 */
 	public function getFollowers(): Collection
 	{
@@ -360,8 +272,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 	}
 
 	/**
-	 * @param User $follower
-	 * @return $this
+	 * add a new follower
 	 */
 	public function addFollower(User $follower): self
 	{
@@ -388,7 +299,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 	/**
 	 * get users that this user is following
 	 *
-	 * @return Collection<int, User>
+	 * @return Collection<int, User> the users that this user is following
 	 */
 	public function getFollowing(): Collection
 	{
@@ -396,26 +307,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 	}
 
 	/**
-	 * @param User $following
-	 * @return $this
-	 */
-	public function addFollowing(User $following): self
-	{
-		if (!$this->following($following)) {
-			$follow = new Follow();
-			$follow->setFollower($this);
-			$follow->setFollowed($following);
-			$this->following->add($follow);
-		}
-
-		return $this;
-	}
-
-	/**
 	 * returns true if the user follows the given user
 	 *
 	 * @param User $user the user to check if this user follows
-	 * @return bool
 	 */
 	public function following(User $user): bool
 	{
@@ -425,7 +319,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 	/**
 	 * returns a collection of posts that this user has posted
 	 *
-	 * @return Collection<int, Post>
+	 * @return Collection<int, Post> the posts that this user has posted
 	 */
 	public function getPosts(): Collection
 	{
@@ -434,9 +328,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
 	/**
 	 * adds a new post created by this user
-	 *
-	 * @param Post $post
-	 * @return $this
 	 */
 	public function addPost(Post $post): self
 	{
@@ -446,5 +337,74 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 		}
 
 		return $this;
+	}
+
+	/**
+	 * executes before persisting the entity
+	 */
+	#[ORM\PrePersist]
+	public function prePersist(): void
+	{
+		$this->created_at = new DateTimeImmutable();
+		$this->updated_at = new DateTimeImmutable();
+	}
+
+	/**
+	 * executes before updating the entity
+	 */
+	#[ORM\PreUpdate]
+	public function preUpdate(): void
+	{
+		$this->updated_at = new DateTimeImmutable();
+	}
+
+	/**
+	 * returns the username of the user
+	 */
+	public function __toString(): string
+	{
+		return $this->getUsername();
+	}
+
+	public function getUsername(): ?string
+	{
+		return $this->username;
+	}
+
+	public function setUsername(string $username): self
+	{
+		$this->username = $username;
+
+		return $this;
+	}
+
+	/**
+	 * @return array{int, string, string, bool, DateTimeImmutable|null, DateTimeImmutable|null}
+	 */
+	public function __serialize(): array
+	{
+		return [
+			$this->id,
+			$this->username,
+			$this->password,
+			$this->isVerified,
+			$this->created_at,
+			$this->updated_at,
+		];
+	}
+
+	/**
+	 * @param array{int, string, string, bool, DateTimeImmutable|null, DateTimeImmutable|null} $data
+	 */
+	public function __unserialize(array $data): void
+	{
+		[
+			$this->id,
+			$this->username,
+			$this->password,
+			$this->isVerified,
+			$this->created_at,
+			$this->updated_at,
+		] = $data;
 	}
 }

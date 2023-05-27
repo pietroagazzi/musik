@@ -93,7 +93,7 @@ class UserShowCommand extends Command
 			$io->table(
 				['Id', 'ExpiresAt', 'Expired', 'HashedToken'],
 				array_map(
-					fn(ResetPasswordRequest $request) => [
+					static fn(ResetPasswordRequest $request) => [
 						$request->getId(),
 						$request->getExpiresAt()->format('d-m-Y H:i:s'),
 						$request->isExpired() ? 'Yes' : 'No',
