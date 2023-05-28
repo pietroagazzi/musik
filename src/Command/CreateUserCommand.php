@@ -6,7 +6,6 @@ use App\Entity\User;
 use App\Repository\UserRepository;
 use App\Utils\UserValidator;
 use Doctrine\ORM\EntityManagerInterface;
-use InvalidArgumentException;
 use RuntimeException;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -15,11 +14,13 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Stopwatch\Stopwatch;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
 use function sprintf;
 
 /**
- * Used to create a new user
+ * Used to create a new user and store it in the database
+ * @see https://symfony.com/doc/current/console.html
+ *
+ * @author Pietro Agazzi <agazzi_pietro@protonmail.com>
  */
 #[AsCommand(
 	name: 'app:user:add',

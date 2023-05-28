@@ -23,7 +23,7 @@ final readonly class UserValidator
 	 */
 	public function validateUsername(?string $username): ?string
 	{
-		$this->validate($username, 'username');
+		$this->validatePropriety($username, 'username');
 
 		return $username;
 	}
@@ -31,7 +31,7 @@ final readonly class UserValidator
 	/**
 	 * @throws InvalidArgumentException if the value is invalid
 	 */
-	public function validate(mixed $value, string $propriety): void
+	public function validatePropriety(mixed $value, string $propriety): void
 	{
 		$constraints = $this->getConstraints($propriety);
 
@@ -65,7 +65,7 @@ final readonly class UserValidator
 	 */
 	public function validateEmail(?string $email): ?string
 	{
-		$this->validate($email, 'email');
+		$this->validatePropriety($email, 'email');
 
 		return $email;
 	}

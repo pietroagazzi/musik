@@ -84,10 +84,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 	#[ORM\Column]
 	private ?DateTimeImmutable $updated_at = null;
 
-	#[ORM\OneToMany(mappedBy: 'followed', targetEntity: Follow::class, orphanRemoval: true)]
+	#[ORM\OneToMany(mappedBy: 'followed', targetEntity: Follow::class)]
 	private Collection $followers;
 
-	#[ORM\OneToMany(mappedBy: 'follower', targetEntity: Follow::class, orphanRemoval: true)]
+	#[ORM\OneToMany(mappedBy: 'follower', targetEntity: Follow::class)]
 	private Collection $following;
 
 	#[ORM\OneToMany(mappedBy: 'user', targetEntity: Post::class)]
@@ -272,31 +272,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 	}
 
 	/**
-	 * add a new follower
-	 */
-	public function addFollower(User $follower): self
-	{
-		if (!$this->followedBy($follower)) {
-			$follow = new Follow();
-			$follow->setFollower($follower);
-			$follow->setFollowed($this);
-			$this->followers->add($follow);
-		}
-
-		return $this;
-	}
-
-	/**
-	 * returns true if the given user follows this user
-	 */
-	public function followedBy(User $user): bool
-	{
-		return $this->followers->filter(
-				fn(Follow $follower) => $follower->getFollower() === $user
-			)->count() > 0;
-	}
-
-	/**
 	 * get users that this user is following
 	 *
 	 * @return Collection<int, User> the users that this user is following
@@ -314,6 +289,16 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 	public function following(User $user): bool
 	{
 		return $user->followedBy($this);
+	}
+
+	/**
+	 * returns true if the given user follows this user
+	 */
+	public function followedBy(User $user): bool
+	{
+		return $this->followers->filter(
+				fn(Follow $follower) => $follower->getFollower() === $user
+			)->count() > 0;
 	}
 
 	/**
