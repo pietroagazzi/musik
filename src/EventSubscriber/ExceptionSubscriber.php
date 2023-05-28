@@ -57,11 +57,11 @@ class ExceptionSubscriber implements EventSubscriberInterface
 			$exception = $exception->getPrevious();
 		}
 
-		if ($exception instanceof SpotifyWebAPIException and $exception->getMessage() == 'Bad OAuth request') {
+		if ($exception instanceof SpotifyWebAPIException && $exception->getMessage() === 'Bad OAuth request') {
 			/** @var User|null $user */
 			$user = $this->security->getUser();
 
-			if ($user and $connection = $user->getConnection('spotify')) {
+			if ($user && $connection = $user->getConnection('spotify')) {
 				$this->entityManager->remove($connection);
 				$this->entityManager->flush();
 

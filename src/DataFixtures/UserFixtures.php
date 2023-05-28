@@ -2,7 +2,6 @@
 
 namespace App\DataFixtures;
 
-use App\Entity\Follow;
 use App\Entity\User;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Bundle\FixturesBundle\FixtureGroupInterface;
@@ -75,11 +74,7 @@ class UserFixtures extends Fixture implements FixtureGroupInterface
 		 * @var User $followed
 		 */
 		foreach ($this->followDataProvider() as [$follower, $followed]) {
-			$follow = (new Follow)
-				->setFollower($follower)
-				->setFollowed($followed);
-
-			$manager->persist($follow);
+			$follower->addFollow($followed);
 		}
 
 		$manager->flush();

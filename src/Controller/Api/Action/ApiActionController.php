@@ -3,8 +3,8 @@
 namespace App\Controller\Api\Action;
 
 use App\Entity\User;
-use App\Repository\FollowRepository;
 use App\Repository\UserRepository;
+use Doctrine\ORM\EntityManagerInterface;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -32,18 +32,14 @@ use Throwable;
 class ApiActionController extends AbstractController
 {
 	public function __construct(
-		private readonly UserRepository   $userRepository,
-		private readonly FollowRepository $followRepository,
+		private readonly UserRepository         $userRepository,
+		private readonly EntityManagerInterface $entityManager,
 	)
 	{
 	}
 
 	/**
-	 * follow the given user
-	 *
-	 * @param int $user_id the id of the user to follow
-	 * @param User $user the current user
-	 * @return Response
+	 * @param User $user
 	 * @throws ContainerExceptionInterface
 	 * @throws NotFoundExceptionInterface
 	 * @throws Throwable
@@ -84,14 +80,15 @@ class ApiActionController extends AbstractController
 		}
 
 		// check if user is already following the user
-		if ($followed->followedBy($user)) {
+		if ($followed->isFollowing($user)) {
 			return $response
 				->setData(['message' => 'You already follow this user'])
 				->setStatusCode(Response::HTTP_BAD_REQUEST);
 		}
 
 		// follow user
-		$this->followRepository->follow($user, $followed);
+		$user->addFollow($followed);
+		$this->entityManager->flush();
 
 		// return response
 		return $response
@@ -100,10 +97,6 @@ class ApiActionController extends AbstractController
 	}
 
 	/**
-	 * generate a new csrf token
-	 *
-	 * @param string $tokenId the id of the token
-	 * @return string the new csrf token
 	 * @throws ContainerExceptionInterface
 	 * @throws NotFoundExceptionInterface
 	 */
@@ -115,11 +108,7 @@ class ApiActionController extends AbstractController
 	}
 
 	/**
-	 * unfollow the given user
-	 *
-	 * @param int $user_id the id of the user to unfollow
-	 * @param User $user the current user
-	 * @return JsonResponse
+	 * @param User $user
 	 * @throws ContainerExceptionInterface
 	 * @throws NotFoundExceptionInterface
 	 * @throws Throwable
@@ -141,8 +130,7 @@ class ApiActionController extends AbstractController
 		$response = new JsonResponse;
 
 		// set new csrf token
-		$response
-			->headers->set('X-CSRF-Token', $newCsrfToken);
+		$response->headers->set('X-CSRF-Token', $newCsrfToken);
 
 		// get user to unfollow
 		if (!$followed = $this->userRepository->find($user_id)) {
@@ -152,14 +140,15 @@ class ApiActionController extends AbstractController
 		}
 
 		// check if user is trying to unfollow himself
-		if (!$followed->followedBy($user)) {
+		if (!$user->isFollowing($followed)) {
 			return $response
 				->setData(['message' => 'You don\'t follow this user'])
 				->setStatusCode(Response::HTTP_BAD_REQUEST);
 		}
 
 		// unfollow user
-		$this->followRepository->unfollow($user, $followed);
+		$user->removeFollow($followed);
+		$this->entityManager->flush();
 
 		return $response
 			->setData(['message' => 'User unfollowed'])

@@ -84,14 +84,14 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 	#[ORM\Column]
 	private ?DateTimeImmutable $updated_at = null;
 
-	#[ORM\OneToMany(mappedBy: 'followed', targetEntity: Follow::class, cascade: ['persist', 'remove'])]
-	private Collection $followers;
-
-	#[ORM\OneToMany(mappedBy: 'follower', targetEntity: Follow::class, cascade: ['persist', 'remove'])]
-	private Collection $following;
-
 	#[ORM\OneToMany(mappedBy: 'user', targetEntity: Post::class, cascade: ['persist', 'remove'])]
 	private Collection $posts;
+
+	#[ORM\ManyToMany(targetEntity: self::class, inversedBy: 'followers')]
+	private Collection $following;
+
+	#[ORM\ManyToMany(targetEntity: self::class, mappedBy: 'following')]
+	private Collection $followers;
 
 	public function __construct()
 	{
@@ -99,8 +99,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 		$this->emailVerificationRequests = new ArrayCollection();
 		$this->connections = new ArrayCollection();
 		$this->followers = new ArrayCollection();
-		$this->following = new ArrayCollection();
 		$this->posts = new ArrayCollection();
+		$this->following = new ArrayCollection();
 	}
 
 	public function getId(): ?int
@@ -261,45 +261,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 		return $this;
 	}
 
-	/**
-	 * get users that follow this user
-	 *
-	 * @return Collection<int, User> the users that follow this user
-	 */
-	public function getFollowers(): Collection
-	{
-		return $this->followers->map(fn(Follow $follow) => $follow->getFollower());
-	}
-
-	/**
-	 * get users that this user is following
-	 *
-	 * @return Collection<int, User> the users that this user is following
-	 */
-	public function getFollowing(): Collection
-	{
-		return $this->following->map(fn(Follow $follow) => $follow->getFollowed());
-	}
-
-	/**
-	 * returns true if the user follows the given user
-	 *
-	 * @param User $user the user to check if this user follows
-	 */
-	public function following(User $user): bool
-	{
-		return $user->followedBy($this);
-	}
-
-	/**
-	 * returns true if the given user follows this user
-	 */
-	public function followedBy(User $user): bool
-	{
-		return $this->followers->filter(
-				fn(Follow $follower) => $follower->getFollower() === $user
-			)->count() > 0;
-	}
 
 	/**
 	 * returns a collection of posts that this user has posted
@@ -364,32 +325,64 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 	}
 
 	/**
-	 * @return array{int, string, string, bool, DateTimeImmutable|null, DateTimeImmutable|null}
+	 * @return Collection<int, self>
 	 */
-	public function __serialize(): array
+	public function getFollow(): Collection
 	{
-		return [
-			$this->id,
-			$this->username,
-			$this->password,
-			$this->isVerified,
-			$this->created_at,
-			$this->updated_at,
-		];
+		return $this->following;
 	}
 
 	/**
-	 * @param array{int, string, string, bool, DateTimeImmutable|null, DateTimeImmutable|null} $data
+	 * @return Collection<int, self>
 	 */
-	public function __unserialize(array $data): void
+	public function getFollowers(): Collection
 	{
-		[
-			$this->id,
-			$this->username,
-			$this->password,
-			$this->isVerified,
-			$this->created_at,
-			$this->updated_at,
-		] = $data;
+		return $this->followers;
+	}
+
+	/**
+	 * the given user will follow this user
+	 */
+	public function addFollower(self $follower): self
+	{
+		if (!$this->followers->contains($follower)) {
+			$this->followers->add($follower);
+			$follower->addFollow($this);
+		}
+
+		return $this;
+	}
+
+	/**
+	 * the given user will be followed by this user
+	 */
+	public function addFollow(self $follow): self
+	{
+		if (!$this->following->contains($follow)) {
+			$this->following->add($follow);
+		}
+
+		return $this;
+	}
+
+	public function isFollowing(self $follow): bool
+	{
+		return $this->following->contains($follow);
+	}
+
+	public function removeFollower(self $follower): self
+	{
+		if ($this->followers->removeElement($follower)) {
+			$follower->removeFollow($this);
+		}
+
+		return $this;
+	}
+
+	public function removeFollow(self $follow): self
+	{
+		$this->following->removeElement($follow);
+
+		return $this;
 	}
 }

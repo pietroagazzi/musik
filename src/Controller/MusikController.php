@@ -17,9 +17,6 @@ use Symfony\Component\Security\Http\Attribute\CurrentUser;
  */
 class MusikController extends AbstractController
 {
-	/**
-	 * @param EntityManagerInterface $entityManager
-	 */
 	public function __construct(
 		private readonly EntityManagerInterface $entityManager
 	)
@@ -27,14 +24,13 @@ class MusikController extends AbstractController
 	}
 
 	/**
-	 * home page
-	 *
 	 * @param User|null $user
-	 * @param Client $spotify
-	 * @return Response
 	 */
 	#[Route('', name: 'app_home')]
-	public function index(?UserInterface $user, Client $spotify): Response
+	public function index(
+		#[CurrentUser] ?UserInterface $user,
+		Client                        $spotify
+	): Response
 	{
 		if ($user && $connection = $user->getConnection('spotify')) {
 			$spotify
@@ -47,14 +43,6 @@ class MusikController extends AbstractController
 		]);
 	}
 
-	/**
-	 * page for the current user
-	 *
-	 * @param string $username
-	 * @param Client $client
-	 * @param User $currentUser
-	 * @return Response
-	 */
 	#[Route('{username}', name: 'app_user', requirements: ['username' => '[a-zA-Z0-9]{4,}'], priority: -1)]
 	public function user(
 		string              $username,
