@@ -41,7 +41,7 @@ final class Resource
 	#[ORM\Column]
 	private ?DateTimeImmutable $updated_at = null;
 
-	#[ORM\OneToMany(mappedBy: 'resource', targetEntity: Post::class)]
+	#[ORM\OneToMany(mappedBy: 'resource', targetEntity: Post::class, cascade: ['persist', 'remove'])]
 	private Collection $posts;
 
 	public function __construct()

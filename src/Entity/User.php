@@ -75,7 +75,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 	)]
 	private Collection $emailVerificationRequests;
 
-	#[ORM\OneToMany(mappedBy: 'user', targetEntity: Connection::class)]
+	#[ORM\OneToMany(mappedBy: 'user', targetEntity: Connection::class, cascade: ['persist', 'remove'])]
 	private Collection $connections;
 
 	#[ORM\Column]
@@ -84,13 +84,13 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 	#[ORM\Column]
 	private ?DateTimeImmutable $updated_at = null;
 
-	#[ORM\OneToMany(mappedBy: 'followed', targetEntity: Follow::class)]
+	#[ORM\OneToMany(mappedBy: 'followed', targetEntity: Follow::class, cascade: ['persist', 'remove'])]
 	private Collection $followers;
 
-	#[ORM\OneToMany(mappedBy: 'follower', targetEntity: Follow::class)]
+	#[ORM\OneToMany(mappedBy: 'follower', targetEntity: Follow::class, cascade: ['persist', 'remove'])]
 	private Collection $following;
 
-	#[ORM\OneToMany(mappedBy: 'user', targetEntity: Post::class)]
+	#[ORM\OneToMany(mappedBy: 'user', targetEntity: Post::class, cascade: ['persist', 'remove'])]
 	private Collection $posts;
 
 	public function __construct()
