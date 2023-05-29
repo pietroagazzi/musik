@@ -4,16 +4,17 @@ namespace App\Controller;
 
 use App\Entity\User;
 use App\Repository\UserRepository;
-use App\Spotify\Client;
+use App\Spotify\Client as SpotifyClient;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Http\Attribute\CurrentUser;
 
 /**
- * controller for the musik pages
+ * Controller for the musik pages
+ *
+ * @author Pietro Agazzi <agazzi_pietro@protonmail.com>
  */
 class MusikController extends AbstractController
 {
@@ -23,13 +24,10 @@ class MusikController extends AbstractController
 	{
 	}
 
-	/**
-	 * @param User|null $user
-	 */
 	#[Route('', name: 'app_home')]
 	public function index(
-		#[CurrentUser] ?UserInterface $user,
-		Client                        $spotify
+		#[CurrentUser] ?User $user,
+		SpotifyClient        $spotify
 	): Response
 	{
 		if ($user && $connection = $user->getConnection('spotify')) {
@@ -46,7 +44,7 @@ class MusikController extends AbstractController
 	#[Route('{username}', name: 'app_user', requirements: ['username' => '[a-zA-Z0-9]{4,}'], priority: -1)]
 	public function user(
 		string              $username,
-		Client              $client,
+		SpotifyClient       $client,
 		#[CurrentUser] User $currentUser
 	): Response
 	{
@@ -73,7 +71,6 @@ class MusikController extends AbstractController
 			]);
 		}
 
-		// render the user page
 		return $this->render('musik/user.html.twig', [
 			'user' => $user,
 			'spotify_api' => $client
